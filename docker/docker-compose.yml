@@ -1,0 +1,85 @@
+networks:
+  my_network:
+    driver: bridge
+    name: my_network
+
+services:
+  nifi:
+    container_name: nifi-ingestion
+    build: ./nifi/nifi-ingestion/
+    hostname: nifi-ingestion
+    ports:
+      - '8443:8443'
+    networks:
+      - my-network
+    tty: true
+    environment:
+      - SINGLE_USER_CREDENTIALS_USERNAME=admin
+      - SINGLE_USER_CREDENTIALS_PASSWORD=${SINGLE_USER_CREDENTIALS_PASSWORD}
+      - NIFI_SENSITIVE_PROPS_KEY=${NIFI_SENSITIVE_PROPS_KEY}
+      - NIFI_HOME=/opt/nifi/nifi-current
+    volumes:
+      - ./scripts/nifi:/opt/nifi/nifi-current/conf/nifi-ingestion/scripts
+      - ./nifi/nifi-ingestion/dataset:/opt/nifi/nifi-current/dataset
+    depends_on: 
+      - hdfs-master
+  ## HDFS
+  hdfs-master :
+    image: matnar/hadoop
+    ports:
+      - "9870:9870"
+      - "54310:54310"
+    networks:
+      - my_network
+    tty: true
+    volumes:
+    - ../dataset:/dataset
+
+  slave1 :
+    image: matnar/hadoop
+    ports:
+      - "9864:9864"
+    networks:
+      - my_network
+    tty: true
+
+  slave2:
+    image: matnar/hadoop
+    ports:
+      - "9863:9864"
+    networks:
+      - my_network
+    tty: true
+
+  slave3:
+    image: matnar/hadoop
+    ports:
+      - "9862:9864"
+    networks:
+      - my_network
+    tty: true
+
+
+  ## Spark
+  spark-master:
+    image: bitnami/spark
+    environment:
+      - SPARK_MODE=master
+    networks:
+      - my_network
+    hostname: spark-master
+    ports:
+      - 8080:8080
+    tty: true
+
+  spark-worker:
+    image: bitnami/spark
+    networks:
+      - my_network
+    environment:
+      - SPARK_MODE=worker
+    tty: true
+    depends_on:
+      - spark-master
+    deploy:
+      replicas: 2
