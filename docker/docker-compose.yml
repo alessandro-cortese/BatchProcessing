@@ -11,12 +11,12 @@ services:
     ports:
       - '8443:8443'
     networks:
-      - my-network
+      - my_network
     tty: true
     environment:
-      - SINGLE_USER_CREDENTIALS_USERNAME=admin
-      - SINGLE_USER_CREDENTIALS_PASSWORD=${SINGLE_USER_CREDENTIALS_PASSWORD}
-      - NIFI_SENSITIVE_PROPS_KEY=${NIFI_SENSITIVE_PROPS_KEY}
+      - USERNAME=admin
+      - PASSWORD=${NIFI_PASSWORD}
+      - NIFI_WEB_HTTP_PORT=8090
       - NIFI_HOME=/opt/nifi/nifi-current
     volumes:
       - ./scripts/nifi:/opt/nifi/nifi-current/conf/nifi-ingestion/scripts
@@ -61,25 +61,25 @@ services:
 
 
   ## Spark
-  spark-master:
-    image: bitnami/spark
-    environment:
-      - SPARK_MODE=master
-    networks:
-      - my_network
-    hostname: spark-master
-    ports:
-      - 8080:8080
-    tty: true
+  # spark-master:
+  #   image: bitnami/spark
+  #   environment:
+  #     - SPARK_MODE=master
+  #   networks:
+  #     - my_network
+  #   hostname: spark-master
+  #   ports:
+  #     - 8080:8080
+  #   tty: true
 
-  spark-worker:
-    image: bitnami/spark
-    networks:
-      - my_network
-    environment:
-      - SPARK_MODE=worker
-    tty: true
-    depends_on:
-      - spark-master
-    deploy:
-      replicas: 2
+  # spark-worker:
+  #   image: bitnami/spark
+  #   networks:
+  #     - my_network
+  #   environment:
+  #     - SPARK_MODE=worker
+  #   tty: true
+  #   depends_on:
+  #     - spark-master
+  #   deploy:
+  #     replicas: 2
