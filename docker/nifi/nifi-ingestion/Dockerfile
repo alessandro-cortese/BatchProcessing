@@ -11,6 +11,6 @@ RUN mkdir $NIFI_HOME/nifi-output
 
 # Copy the flow configuration files
 # COPY --chown=nifi:nifi conf/flow.xml.gz $NIFI_HOME/conf/flow.xml.gz
-#COPY --chown=nifi:nifi conf/flow.json.gz $NIFI_HOME/conf/flow.json.gz
+COPY --chown=nifi:nifi conf/flow.json.gz $NIFI_HOME/conf/flow.json.gz
 
 EXPOSE 8443

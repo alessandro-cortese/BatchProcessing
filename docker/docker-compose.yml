@@ -14,10 +14,10 @@ services:
       - my_network
     tty: true
     environment:
-      - USERNAME=admin
-      - PASSWORD=${NIFI_PASSWORD}
-      - NIFI_WEB_HTTP_PORT=8090
+      - SINGLE_USER_CREDENTIALS_USERNAME=admin
+      - SINGLE_USER_CREDENTIALS_PASSWORD=${NIFI_PASSWORD}
       - NIFI_HOME=/opt/nifi/nifi-current
+      - NIFI_SENSITIVE_PROPS_KEY=aUXli7kVGgb6egfNFUca7Rb7yurCrZxTYULdx3bM5kU=
     volumes:
       - ./scripts/nifi:/opt/nifi/nifi-current/conf/nifi-ingestion/scripts 
       - ./nifi/nifi-ingestion/dataset:/opt/nifi/nifi-current/dataset
