@@ -24,9 +24,11 @@ services:
       - hdfs-master
   ## HDFS
   hdfs-master :
+    container_name: master
+    hostname: master
     image: matnar/hadoop
     ports:
-      - "9870:9870"
+      - "9000:9000"
       - "54310:54310"
     networks:
       - my_network
@@ -35,6 +37,7 @@ services:
     - ../dataset:/dataset
 
   slave1 :
+    container_name: hdfs-worker1
     image: matnar/hadoop
     ports:
       - "9864:9864"
@@ -43,6 +46,7 @@ services:
     tty: true
 
   slave2:
+    container_name: hdfs-worker2
     image: matnar/hadoop
     ports:
       - "9863:9864"
@@ -51,6 +55,7 @@ services:
     tty: true
 
   slave3:
+    container_name: hdfs-worker3
     image: matnar/hadoop
     ports:
       - "9862:9864"
