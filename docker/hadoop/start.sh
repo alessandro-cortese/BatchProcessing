@@ -13,7 +13,9 @@ WORKERS_FILE=$HADOOP_HOME/etc/hadoop/workers
 
 $HADOOP_HOME/sbin/start-dfs.sh
 
+# Wait for the NameNode to respond
+
 hdfs dfs -mkdir /nifi
 hdfs dfs -chmod 777 /nifi
 
-hadoop fs -copyToLocal /nifi/merged.parquet /tmp/merged.parquet
+#hadoop fs -copyToLocal /nifi/merged.parquet /tmp/merged.parquet

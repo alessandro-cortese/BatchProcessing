@@ -22,19 +22,23 @@ services:
       - ./nifi/nifi-ingestion/dataset:/opt/nifi/nifi-current/dataset
     depends_on: 
       - hdfs-master
+
   ## HDFS
   hdfs-master :
     container_name: master
+    working_dir: /scripts
     hostname: master
     image: matnar/hadoop
     ports:
-      - "9000:9000"
       - "54310:54310"
     networks:
       - my_network
     tty: true
     volumes:
-    - ../dataset:/dataset
+    - ./hadoop:/scripts
+    depends_on:
+      - slave1
+    
 
   slave1 :
     container_name: hdfs-worker1
@@ -44,6 +48,8 @@ services:
     networks:
       - my_network
     tty: true
+    depends_on:
+      - slave2
 
   slave2:
     container_name: hdfs-worker2
@@ -53,6 +59,8 @@ services:
     networks:
       - my_network
     tty: true
+    depends_on:
+      - slave3
 
   slave3:
     container_name: hdfs-worker3
