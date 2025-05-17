@@ -1,9 +1,5 @@
-networks:
-  my_network:
-    driver: bridge
-    name: my_network
-
 services:
+  ## NIFI
   nifi:
     container_name: nifi-ingestion
     build: ./nifi/nifi-ingestion/
@@ -11,7 +7,7 @@ services:
     ports:
       - '8443:8443'
     networks:
-      - my_network
+      - batch_processing_network
     tty: true
     environment:
       - SINGLE_USER_CREDENTIALS_USERNAME=admin
@@ -25,14 +21,14 @@ services:
 
   ## HDFS
   hdfs-master :
-    container_name: master
+    container_name: hdfs-master
     working_dir: /scripts
     hostname: master
     image: matnar/hadoop
     ports:
       - "54310:54310"
     networks:
-      - my_network
+      - batch_processing_network
     tty: true
     volumes:
     - ./hadoop:/scripts
@@ -46,7 +42,7 @@ services:
     ports:
       - "9864:9864"
     networks:
-      - my_network
+      - batch_processing_network
     tty: true
     depends_on:
       - slave2
@@ -57,7 +53,7 @@ services:
     ports:
       - "9863:9864"
     networks:
-      - my_network
+      - batch_processing_network
     tty: true
     depends_on:
       - slave3
@@ -68,30 +64,49 @@ services:
     ports:
       - "9862:9864"
     networks:
-      - my_network
+      - batch_processing_network
     tty: true
 
+  ## SPARK
+  spark-master:
+    container_name: spark-master
+    image: bitnami/spark
+    environment:
+      - SPARK_MODE=master
+    networks:
+      - batch_processing_network
+    hostname: spark-master
+    ports:
+      - 8080:8080
+    tty: true
+    depends_on:
+      - spark-worker1
 
-  ## Spark
-  # spark-master:
-  #   image: bitnami/spark
-  #   environment:
-  #     - SPARK_MODE=master
-  #   networks:
-  #     - my_network
-  #   hostname: spark-master
-  #   ports:
-  #     - 8080:8080
-  #   tty: true
+  spark-worker1:
+    container_name: spark-worker1
+    image: bitnami/spark
+    networks:
+      - batch_processing_network
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+    tty: true
+    depends_on:
+      - spark-worker2
 
-  # spark-worker:
-  #   image: bitnami/spark
-  #   networks:
-  #     - my_network
-  #   environment:
-  #     - SPARK_MODE=worker
-  #   tty: true
-  #   depends_on:
-  #     - spark-master
-  #   deploy:
-  #     replicas: 2
+  spark-worker2:
+    container_name: spark-worker2
+    image: bitnami/spark
+    networks:
+      - batch_processing_network
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+    tty: true
+
+networks:
+  batch_processing_network:
+    driver: bridge
+    name: batch_processing_network
