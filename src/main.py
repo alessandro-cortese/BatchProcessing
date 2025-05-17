@@ -1,7 +1,7 @@
-from controller import controller
+from controller import spark
 
 def main():
-    controller.controller()
+    spark.controller()
 
 
 if __name__ == "__main__":

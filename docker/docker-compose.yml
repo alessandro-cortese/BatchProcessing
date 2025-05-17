@@ -10,10 +10,10 @@ services:
       - batch_processing_network
     tty: true
     environment:
-      - SINGLE_USER_CREDENTIALS_USERNAME=admin
+      - SINGLE_USER_CREDENTIALS_USERNAME=${NIFI_USERNAME}
       - SINGLE_USER_CREDENTIALS_PASSWORD=${NIFI_PASSWORD}
       - NIFI_HOME=/opt/nifi/nifi-current
-      - NIFI_SENSITIVE_PROPS_KEY=aUXli7kVGgb6egfNFUca7Rb7yurCrZxTYULdx3bM5kU=
+      - NIFI_SENSITIVE_PROPS_KEY=${NIFI_SENSITIVE_PROPS_KEY}
     volumes:
       - ./nifi/nifi-ingestion/dataset:/opt/nifi/nifi-current/dataset
     depends_on: 
