@@ -10,6 +10,8 @@ WORKDIR /home/spark
 
 USER spark
 
-RUN mkdir config
+COPY requirements.txt /home/spark/requirements.txt
 
-# COPY config/ .
+# RUN pip install --no-cache-dir -r requirements.txt
+
+CMD ["/bin/bash"]

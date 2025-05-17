@@ -1,100 +1,125 @@
 from __future__ import annotations
 
-import time
-from pyspark import SparkContext
-from pyspark.sql import SparkSession, DataFrame
-from enum import Enum
-from py4j.java_gateway import java_import
+from model.model import DataFormat, SparkError, QueryResult
+from engineering.files import write_result_as_csv, write_evaluation, results_path_from_filename
+from api.spark_api import SparkAPI
+from pyspark.rdd import RDD
+from pyspark.sql.functions import year, to_timestamp, col, dayofmonth, hour
+from pyspark.sql import DataFrame, Row
+from query.query1 import exec_query1
+# from query.query2 import query2
+# from query.query3 import query3
+# from query.query4 import query4
 
 
-class DataFormat(Enum):
-    PARQUET = "parquet"
-    AVRO = "avro"
-    CSV = "csv"
+DATASET_FILE_NAME = "merged"
+PRE_PROCESSED_FILE_NAME = "dataset"
+class SparkController:
+    
+    def __init__(self, query: int, write_evaluation: bool = False):
+        self._query_num = query
+        self._write_evaluation = write_evaluation
+        self._data_format = None
+        self._results: list[QueryResult] = []
 
+    def set_data_format(self, data_format: DataFormat) -> SparkController:
+        """Set the format of the data to read"""
+        self._data_format = data_format
 
-class Config:
-    @property
-    def spark_master(self): return "spark-master"
-    @property
-    def spark_app_name(self): return "spark-app"
-    @property
-    def spark_port(self): return 7077
-    @property
-    def hdfs_url(self): return "hdfs://master:54310"
-    @property
-    def hdfs_dataset_dir_url(self): return f"{self.hdfs_url}/datasets"
-    @property
-    def hdfs_results_dir_url(self): return f"{self.hdfs_url}/results"
+        return self
+    
+    def prepare_for_processing(self) -> SparkController:
+        """Preprocess data and store the result on HDFS for checkpointing and later processing."""
+        print("Reading data from HDFS in format: " + self._data_format.name)
+        # Retrieve the dataframe by reading from HDFS based on the data form
+        spark_api = SparkAPI.get()
+        df = spark_api.read_from_hdfs(self._data_format, DATASET_FILE_NAME, "nifi")
 
+        print("Preparing data for processing..")
+        print(df.head)
+        
+        # Drop rows with missing values and duplicates
+        df = df.dropna().dropDuplicates()
 
-class SparkAPI:
-    _instance = None
+        df = df.withColumn("Year", year(col("Datetime__UTC_")))
+        df = df.withColumn("Day", dayofmonth(col("Datetime__UTC_")))
+        df = df.withColumn("Hour", hour(col("Datetime__UTC_")))
 
-    def __init__(self, session: SparkSession, fs) -> None:
-        self._session = session
-        self._fs = fs
+        # df.show(5, truncate=False)
 
-    @staticmethod
-    def get() -> SparkAPI:
-        if SparkAPI._instance is None:
-            SparkAPI._instance = SparkBuilder().build()
-        return SparkAPI._instance
+        # Select and rename desired columns
+        df = (
+            df
+            .select(
+                col("Datetime__UTC_").alias("Datetime_UTC"),
+                col("Country"),
+                col("Carbon_intensity_gCO_eq_kWh__direct_.member0").alias("Carbon_intensity_gCO_eq_kWh"),
+                col("Carbon_free_energy_percentage__CFE__.member0").alias("Carbon_free_energy_percentage__CFE"),
+                col("Year"),
+                col("Day"),
+                col("Hour")
+            )
+        )
+        # df.show(50, truncate=False)
+        spark_api.write_to_hdfs(df, filename=PRE_PROCESSED_FILE_NAME, format=self._data_format)
 
-    @property
-    def session(self) -> SparkSession:
-        return self._session
+        return self
 
-    @property
-    def context(self) -> SparkContext:
-        return self._session.sparkContext
+    def processing_data(self) -> SparkController:
+        """Process data """
+        assert self._data_format is not None, "Data format not set"
+        api = SparkAPI.get()
 
-    def dataset_exists_on_hdfs(self, filename: str, ext: str) -> bool:
-        config = Config()
-        hdfs_path = self.context._jvm.Path(f"{config.hdfs_dataset_dir_url}/{filename}.{ext}")
-        return self._fs.exists(hdfs_path)
+        print("Reading data from HDFS in format " + self._data_format.name)
 
+        df = api.read_from_hdfs(self._data_format, PRE_PROCESSED_FILE_NAME, "dataset")
+        
+        # Clear eventual previous results
+        self._results.clear()
 
-    def read_from_hdfs(self, format: DataFormat, filename: str) -> DataFrame:
-        config = Config()
-        path = f"{config.hdfs_dataset_dir_url}/{filename}.{format.value}"
+        res = self.query_spark_core(self._query_num, df)
+        self._results.append(res)
 
-        if format == DataFormat.PARQUET:
-            return self._session.read.parquet(path)
-        elif format == DataFormat.AVRO:
-            return self._session.read.format("avro").load(path)
-        elif format == DataFormat.CSV:
-            return self._session.read.csv(path, header=True, inferSchema=True)
+        return self
+    
+    
+    def query_spark_core(self, query_num: int, df: DataFrame) -> QueryResult:
+        """Executes a query using Spark Core. Using both RDD and DataFrame."""
+        if query_num == 1:
+            print("Executing query 1 with Spark Core..")
+            # Query 1
+            return exec_query1(df)
+        # elif query_num == 2:
+        #     print("Executing query 2 with Spark Core..")
+        #     # Query 2
+        #     return query2.exec_query(rdd, df)
+        # elif query_num == 3:
+        #     print("Executing query 3 with Spark Core..")
+        #     return query3.exec_query(rdd, df)
+        # elif query_num == 4:
+        #     print("Executing query 4 with Spark Core..")
+        #     return query4.exec_query(rdd, df)
         else:
-            raise ValueError("Unsupported format")
+            raise SparkError("Invalid query")
+        
+    def write_results(self) -> SparkController:
+        """Write the results."""
+        for res in self._results:
+            for output_res in res:
+                filename = output_res.name + ".csv"
+                df = SparkAPI.df_from_action_result(output_res)
+                if self._local_write:
+                    out_path = results_path_from_filename(filename)
+                    print("Writing results to: " + out_path)
 
-    def write_results_to_hdfs(self, df: DataFrame, filename: str) -> None:
-        config = Config()
-        path = f"{config.hdfs_results_dir_url}/{filename}"
-        df.coalesce(1).write.csv(path, mode="overwrite", header=True)
+                    write_result_as_csv(res_df=df, out_path=out_path)
 
-    def close(self) -> None:
-        self._session.stop()
-        SparkAPI._instance = None
+                # Write results to HDFS
+                # print("Writing results to HDFS..")
+                # api.write_results_to_hdfs(df, filename)
 
+            if self._write_evaluation:
+                print("Writing evaluation..")
+                write_evaluation(res.name, self._data_format.name.lower(), res.total_exec_time)
 
-class SparkBuilder:
-    def build(self) -> SparkAPI:
-        config = Config()
-        master_url = f"spark://{config.spark_master}:{config.spark_port}"
-
-        session = SparkSession.builder \
-            .appName(config.spark_app_name) \
-            .master(master_url) \
-            .config("spark.jars.packages", "org.apache.spark:spark-avro_2.12:3.5.1") \
-            .getOrCreate()
-
-        sc = session.sparkContext
-        hadoop_conf = sc._jsc.hadoopConfiguration()
-        hadoop_conf.set("fs.defaultFS", config.hdfs_url)
-
-        java_import(sc._jvm, "org.apache.hadoop.fs.FileSystem")
-        java_import(sc._jvm, "org.apache.hadoop.fs.Path")
-        fs = sc._jvm.FileSystem.get(hadoop_conf)
-
-        return SparkAPI(session, fs)
+        return self
