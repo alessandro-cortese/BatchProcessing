@@ -33,7 +33,7 @@ def delete_file(path: str) -> None:
 
 
 QUERY_RESULTS_PATH = os.path.join(
-    os.getcwd(), "Results")
+    os.getcwd(), "results")
 
 
 def results_path_from_filename(filename: str) -> str:

@@ -45,9 +45,10 @@ def exec_query1(df: DataFrame) -> QueryResult:
         max("Carbon_free_energy_percentage__CFE").alias("Max_CFE")
     ).orderBy("Country", "Year")
 
+    end_time = time.time()
+
     # 3. Trigger computation
     out_res = [tuple(row) for row in result_df.collect()]
-    end_time = time.time()
 
     print("Query execution finished.")
 

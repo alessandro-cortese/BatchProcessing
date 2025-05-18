@@ -25,3 +25,5 @@ hdfs dfs -mkdir /results
 hdfs dfs -chmod 777 /results
 
 #hadoop fs -copyToLocal /nifi/merged.parquet /tmp/merged.parquet
+
+hadoop fs -copyToLocal /results/query2.csv /tmp/
