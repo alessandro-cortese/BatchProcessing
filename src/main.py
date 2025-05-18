@@ -8,8 +8,7 @@ def main():
         sc.set_data_format(DataFormat.PARQUET)  # o il formato corretto
         sc.prepare_for_processing()
         sc.processing_data()
-
-    sc.write_results()
+        sc.write_results()
 
     print("SparkController finished")
 
