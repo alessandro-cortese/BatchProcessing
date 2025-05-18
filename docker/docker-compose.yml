@@ -1,4 +1,5 @@
 services:
+  
   ## NIFI
   nifi:
     container_name: nifi-ingestion
@@ -105,6 +106,16 @@ services:
       - SPARK_MODE=worker
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_CORES=1
+    tty: true
+
+  ## REDIS
+  redis:
+    container_name: redis
+    image: redis
+    networks:
+      - batch_processing_network
+    ports:
+      - "6379:6379"
     tty: true
 
 networks:

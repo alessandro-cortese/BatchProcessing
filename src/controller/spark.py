@@ -3,12 +3,13 @@ from __future__ import annotations
 from model.model import DataFormat, SparkError, QueryResult
 from engineering.files import write_result_as_csv, write_evaluation, results_path_from_filename
 from api.spark_api import SparkAPI
+from engineering.redis import RedisAPI
 from pyspark.rdd import RDD
 from pyspark.sql.functions import year, month, to_timestamp, col, dayofmonth, hour
 from pyspark.sql import DataFrame, Row
-from query.query1 import exec_query1
+from query.query1 import exec_query1_dataframe
 from query.query2 import exec_query2
-# from query.query3 import query3
+from query.query3 import exec_query3
 # from query.query4 import query4
 
 
@@ -37,7 +38,6 @@ class SparkController:
         df = spark_api.read_from_hdfs(self._data_format, DATASET_FILE_NAME, "nifi")
 
         print("Preparing data for processing..")
-        print(df.head)
         
         # Drop rows with missing values and duplicates
         df = df.dropna().dropDuplicates()
@@ -63,7 +63,7 @@ class SparkController:
                 col("Hour")
             )
         )
-        df.show(50, truncate=False)
+        # df.show(50, truncate=False)
         spark_api.write_to_hdfs(df, filename=PRE_PROCESSED_FILE_NAME, format=self._data_format)
 
         return self
@@ -88,19 +88,21 @@ class SparkController:
     
     def query_spark_core(self, query_num: int, df: DataFrame) -> QueryResult:
         """Executes a query using Spark Core. Using both RDD and DataFrame."""
+        rdd = df.rdd.map(tuple)
         if query_num == 1:
             print("Executing query 1 with Spark Core..")
             # Query 1
-
-            return exec_query1(df)
+            return exec_query1_dataframe(df)
         
         elif query_num == 2:
             print("Executing query 2 with Spark Core..")
             # Query 2
             return exec_query2(df)
-        # elif query_num == 3:
-        #     print("Executing query 3 with Spark Core..")
-        #     return query3.exec_query(rdd, df)
+        
+        elif query_num == 3:
+            print("Executing query 3 with Spark Core..")
+            return exec_query3(df)
+        
         # elif query_num == 4:
         #     print("Executing query 4 with Spark Core..")
         #     return query4.exec_query(rdd, df)
@@ -111,6 +113,7 @@ class SparkController:
     def write_results(self) -> SparkController:
         """Write the results."""
         api = SparkAPI.get()
+        redis = RedisAPI.get()
         for res in self._results:
             for output_res in res:
                 filename = output_res.name + ".csv"
@@ -125,9 +128,14 @@ class SparkController:
                 # Write results to HDFS
                 print("Writing results to HDFS..")
                 api.write_results_to_hdfs(df, filename)
+                redis.put_result(query=filename, df=df)
 
             if self._write_evaluation:
                 print("Writing evaluation..")
                 write_evaluation(res.name, self._data_format.name.lower(), res.total_exec_time)
 
         return self
+    
+    def close_session(self) -> None:
+        """Close the Spark session."""
+        SparkAPI.get().close()
