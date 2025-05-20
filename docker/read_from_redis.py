@@ -1,7 +1,7 @@
 import redis
 
 # Connessione a Redis
-r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+r = redis.Redis(host='localhost', port=6379, decode_responses=False)
 
 # Scarica i bytes dal Redis
 csv_bytes = r.get("query1.csv")

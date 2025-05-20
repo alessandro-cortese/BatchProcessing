@@ -11,7 +11,7 @@ HEADER = [
 
 SORT_LIST = []
 
-def exec_query2(df: DataFrame) -> QueryResult:
+def exec_query2_dataframe(df: DataFrame) -> QueryResult:
     """
     Executes Query 1 using only the DataFrame API.
     Input DataFrame columns:

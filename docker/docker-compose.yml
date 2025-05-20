@@ -107,7 +107,9 @@ services:
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_CORES=1
     tty: true
-
+    depends_on:
+      - redis
+      
   ## REDIS
   redis:
     container_name: redis

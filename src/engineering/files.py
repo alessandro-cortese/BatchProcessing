@@ -32,8 +32,8 @@ def delete_file(path: str) -> None:
         os.remove(path)
 
 
-QUERY_RESULTS_PATH = os.path.join(
-    os.getcwd(), "results")
+QUERY_RESULTS_PATH = "/home/spark/results"
+
 
 
 def results_path_from_filename(filename: str) -> str:
@@ -44,15 +44,11 @@ def write_result_as_csv(res_df: DataFrame, out_path: str) -> None:
     header = res_df.schema.names
     res_list = res_df.rdd.collect()
 
-    if (not os.path.exists(out_path)):
-        # Create file and change access mode
-        with open(out_path, "+x") as out_file:
-            pass
-
-    with open(out_path, "+w") as out_file:
+    with open(out_path, "w", newline="") as out_file:
         writer = csv.writer(out_file)
         writer.writerow(header)
         writer.writerows(res_list)
+
 
 
 def write_evaluation(query_name: str, format: str, exec_time: float) -> None:

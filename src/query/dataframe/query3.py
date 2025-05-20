@@ -8,7 +8,7 @@ import pandas as pd
 HEADER = ["Country", "Metric", "Min", "P25", "P50", "P75", "Max"]
 SORT_LIST = ["Country", "Metric"]
 
-def exec_query3(df: DataFrame) -> QueryResult:
+def exec_query3_dataframe(df: DataFrame) -> QueryResult:
     """
     Aggregates the 24-hour daily data for each country, calculates the hourly average and then the percentiles of 
     the hourly averages of Carbon Intensity and CFE.

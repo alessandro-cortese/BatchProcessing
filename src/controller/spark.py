@@ -7,11 +7,12 @@ from engineering.redis import RedisAPI
 from pyspark.rdd import RDD
 from pyspark.sql.functions import year, month, to_timestamp, col, dayofmonth, hour
 from pyspark.sql import DataFrame, Row
-from query.query1 import exec_query1_dataframe
-from query.query2 import exec_query2
-from query.query3 import exec_query3
+from query.dataframe.query1 import exec_query1_dataframe
+from query.dataframe.query2 import exec_query2_dataframe
+from query.dataframe.query3 import exec_query3_dataframe
 # from query.query4 import query4
-
+from query.rdd.query1 import exec_query1_rdd
+from query.rdd.query2 import exec_query2_rdd
 
 DATASET_FILE_NAME = "merged"
 PRE_PROCESSED_FILE_NAME = "dataset"
@@ -68,7 +69,7 @@ class SparkController:
 
         return self
 
-    def processing_data(self) -> SparkController:
+    def processing_data(self, type: str) -> SparkController:
         """Process data """
         assert self._data_format is not None, "Data format not set"
         api = SparkAPI.get()
@@ -80,43 +81,79 @@ class SparkController:
         # Clear eventual previous results
         self._results.clear()
 
-        res = self.query_spark_core(self._query_num, df)
-        self._results.append(res)
+        if type == "dataframe":
+            
+            res = self.query_spark_core_dataframe(self._query_num, df)
+            self._results.append(res)
+
+        elif type == "rdd":
+            
+            rdd = df.rdd.map(lambda row: (
+                row["Country"],
+                row["Datetime_UTC"],
+                row["Carbon_intensity_gCO_eq_kWh"],
+                row["Carbon_free_energy_percentage__CFE"]
+            ))
+            res = self.query_spark_core_rdd(self._query_num, rdd)
+            self._results.append(res)
 
         return self
     
     
-    def query_spark_core(self, query_num: int, df: DataFrame) -> QueryResult:
-        """Executes a query using Spark Core. Using both RDD and DataFrame."""
-        rdd = df.rdd.map(tuple)
+    def query_spark_core_dataframe(self, query_num: int, df: DataFrame) -> QueryResult:
+        """Executes a query using Spark Core. Using DataFrame."""
+        
         if query_num == 1:
-            print("Executing query 1 with Spark Core..")
+            print("Executing query 1 in DataFrame with Spark Core..")
             # Query 1
             return exec_query1_dataframe(df)
         
         elif query_num == 2:
-            print("Executing query 2 with Spark Core..")
+            print("Executing query 2 in DataFrame with Spark Core..")
             # Query 2
-            return exec_query2(df)
+            return exec_query2_dataframe(df)
         
         elif query_num == 3:
-            print("Executing query 3 with Spark Core..")
-            return exec_query3(df)
+            print("Executing query 3 in DataFrame with Spark Core..")
+            return exec_query3_dataframe(df)
         
         # elif query_num == 4:
-        #     print("Executing query 4 with Spark Core..")
+        #     print("Executing query 4 in DataFrame with Spark Core..")
         #     return query4.exec_query(rdd, df)
+        else:
+            raise SparkError("Invalid query")
+        
+    def query_spark_core_rdd(self, query_num: int, rdd: RDD) -> QueryResult:
+        """Executes a query using Spark Core. Using RDD."""
+        
+        if query_num == 1:
+            print("Executing query 1 in RDD with Spark Core..")
+            # Query 1
+            return exec_query1_rdd(rdd)
+        
+        elif query_num == 2:
+            print("Executing query 2 in RDD with Spark Core..")
+            # Query 2
+            return exec_query2_rdd(rdd)
+        
+        # elif query_num == 3:
+        #     print("Executing query 3 in RDD with Spark Core..")
+        #     return exec_query3_rdd(rdd)
+        
+        # elif query_num == 4:
+        #     print("Executing query 4 in RDD with Spark Core..")
+        #     return query4.exec_query(rdd)
         else:
             raise SparkError("Invalid query")
 
         
-    def write_results(self) -> SparkController:
+    def write_results(self, type: str) -> SparkController:
         """Write the results."""
         api = SparkAPI.get()
         redis = RedisAPI.get()
         for res in self._results:
             for output_res in res:
-                filename = output_res.name + ".csv"
+                filename = output_res.name + "_" + type + ".csv"
                 print(f"filename: {filename}")
                 df = api.df_from_action_result(output_res)
                 if self._local_write:
