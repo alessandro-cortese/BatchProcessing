@@ -14,7 +14,6 @@ class RedisAPI:
     @staticmethod
     def get() -> RedisAPI:
         if RedisAPI._instance is None:
-            # Ottieni il path assoluto del progetto
             project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
             config_path = os.path.join(project_root, "config.json")
             
@@ -27,26 +26,24 @@ class RedisAPI:
                 Redis(
                     host=redis_config.get("host", "localhost"),
                     port=redis_config.get("port", 6379),
-                    db=redis_config.get("db", 0)
+                    db=redis_config.get("db", 0),
+                    decode_responses=True  # decodifica UTF-8
                 )
             )
         return RedisAPI._instance
 
     def put_result(self, query: str, df: DataFrame) -> bool:
-        json_res = df.toJSON().collect()
-        json_arr = json.dumps(json_res)
-        success = self._redis_connection.set(query, json_arr)
-        
-        if success:
-            saved_val = self._redis_connection.get(query)
-            if saved_val == json_arr.encode('utf-8'):
-                print("Write and Read on Redis done!")
-                return True
-            else:
-                print("Write done, but the reading did not return the expected value.")
-                return False
-        else:
-            print("Writing Redis failed.")
+        """
+        Salva ogni riga del DataFrame come una Hash in Redis, compatibile con il plugin Redis di Grafana.
+        """
+        try:
+            rows = df.collect()
+            for i, row in enumerate(rows):
+                row_dict = row.asDict()
+                key = f"{query}:{i}"
+                self._redis_connection.hset(name=key, mapping=row_dict)
+            print(f"{len(rows)} rows written to Redis under prefix '{query}:*'")
+            return True
+        except Exception as e:
+            print(f"Error writing to Redis: {e}")
             return False
-
-

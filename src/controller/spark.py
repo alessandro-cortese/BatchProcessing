@@ -7,12 +7,15 @@ from engineering.redis import RedisAPI
 from pyspark.rdd import RDD
 from pyspark.sql.functions import year, month, to_timestamp, col, dayofmonth, hour
 from pyspark.sql import DataFrame, Row
+
 from query.dataframe.query1 import exec_query1_dataframe
 from query.dataframe.query2 import exec_query2_dataframe
 from query.dataframe.query3 import exec_query3_dataframe
-# from query.query4 import query4
+from query.dataframe.query4 import exec_query4
+
 from query.rdd.query1 import exec_query1_rdd
 from query.rdd.query2 import exec_query2_rdd
+from query.rdd.query3 import exec_query3_rdd
 
 DATASET_FILE_NAME = "merged"
 PRE_PROCESSED_FILE_NAME = "dataset"
@@ -115,11 +118,14 @@ class SparkController:
         
         elif query_num == 3:
             print("Executing query 3 in DataFrame with Spark Core..")
+            # Query 3
             return exec_query3_dataframe(df)
         
-        # elif query_num == 4:
-        #     print("Executing query 4 in DataFrame with Spark Core..")
-        #     return query4.exec_query(rdd, df)
+        elif query_num == 4:
+            print("Executing query 4 in DataFrame with Spark Core..")
+            # Query 4
+            return exec_query4(df)
+        
         else:
             raise SparkError("Invalid query")
         
@@ -136,13 +142,11 @@ class SparkController:
             # Query 2
             return exec_query2_rdd(rdd)
         
-        # elif query_num == 3:
-        #     print("Executing query 3 in RDD with Spark Core..")
-        #     return exec_query3_rdd(rdd)
-        
-        # elif query_num == 4:
-        #     print("Executing query 4 in RDD with Spark Core..")
-        #     return query4.exec_query(rdd)
+        elif query_num == 3:
+            print("Executing query 3 in RDD with Spark Core..")
+            # Query 3
+            return exec_query3_rdd(rdd)
+
         else:
             raise SparkError("Invalid query")
 
