@@ -1,3 +1,8 @@
+networks:
+  batch_processing_network:
+    driver: bridge
+    name: batch_processing_network
+
 services:
   
   ## NIFI
@@ -119,8 +124,25 @@ services:
     ports:
       - "6379:6379"
     tty: true
+  
+  ## GRAFANA
+  grafana:
+    container_name: grafana
+    build: ./grafana/
+    image: custom-grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - batch_processing_network
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      - redis
 
-networks:
-  batch_processing_network:
-    driver: bridge
-    name: batch_processing_network
+volumes:
+  grafana-storage:

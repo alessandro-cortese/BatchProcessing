@@ -1,0 +1,193 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "query-dashboard",
+    "title": "Query Results Dashboard",
+    "timezone": "browser",
+    "schemaVersion": 30,
+    "version": 1,
+    "refresh": "5s",
+    "panels": [
+      {
+        "type": "timeseries",
+        "title": "Query 1: Carbon Intensity and CFE (Annually)",
+        "id": 1,
+        "datasource": {
+          "type": "redis-datasource",
+          "uid": "redis"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "datasource": "Redis",
+            "query": "carbon:IT"
+          },
+          {
+            "refId": "B",
+            "datasource": "Redis",
+            "query": "carbon:SE"
+          },
+          {
+            "refId": "C",
+            "datasource": "Redis",
+            "query": "cfe:IT"
+          },
+          {
+            "refId": "D",
+            "datasource": "Redis",
+            "query": "cfe:SE"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "type": "timeseries",
+        "title": "Query 2: Monthly Carbon Intensity and CFE (Italy)",
+        "id": 2,
+        "datasource": {
+          "type": "redis-datasource",
+          "uid": "redis"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "datasource": "Redis",
+            "query": "monthly:carbon:IT"
+          },
+          {
+            "refId": "B",
+            "datasource": "Redis",
+            "query": "monthly:cfe:IT"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "type": "timeseries",
+        "title": "Query 3: Hourly Percentiles",
+        "id": 3,
+        "datasource": {
+          "type": "redis-datasource",
+          "uid": "redis"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "datasource": "Redis",
+            "query": "hourly:carbon:IT"
+          },
+          {
+            "refId": "B",
+            "datasource": "Redis",
+            "query": "hourly:cfe:IT"
+          },
+          {
+            "refId": "C",
+            "datasource": "Redis",
+            "query": "hourly:carbon:SE"
+          },
+          {
+            "refId": "D",
+            "datasource": "Redis",
+            "query": "hourly:cfe:SE"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "x": 0,
+          "y": 9,
+          "w": 24,
+          "h": 8
+        }
+      },
+      {
+        "type": "worldmap",
+        "title": "Query 4: Country Clusters",
+        "id": 4,
+        "datasource": {
+          "type": "redis-datasource",
+          "uid": "redis"
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "datasource": "Redis",
+            "query": "cluster:*",
+            "aggregation": "avg"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 1
+                },
+                {
+                  "color": "red",
+                  "value": 2
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "x": 0,
+          "y": 17,
+          "w": 24,
+          "h": 10
+        }
+      }
+    ],
+    "time": {
+      "from": "now-5y",
+      "to": "now"
+    },
+    "templating": {
+      "list": []
+    },
+    "annotations": {
+      "list": []
+    },
+    "editable": true,
+    "gnetId": null,
+    "iteration": 1747994091087
+  },
+  "overwrite": true
+}

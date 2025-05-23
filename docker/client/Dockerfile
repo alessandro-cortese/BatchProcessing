@@ -14,4 +14,6 @@ COPY requirements.txt /home/spark/requirements.txt
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN pip install redis redis-py-cluster
+
 CMD ["/bin/bash"]

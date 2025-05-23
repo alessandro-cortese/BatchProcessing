@@ -1,4 +1,4 @@
 # Dataset Directory
-dataset/
+# dataset/
 country.txt
-*/__pycahce__/
+*/__pycahce__/*
