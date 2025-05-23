@@ -12,6 +12,7 @@ from query.dataframe.query1 import exec_query1_dataframe
 from query.dataframe.query2 import exec_query2_dataframe
 from query.dataframe.query3 import exec_query3_dataframe
 from query.dataframe.query4 import exec_query4
+from query.dataframe.query4 import exec_query4_parallel
 
 from query.rdd.query1 import exec_query1_rdd
 from query.rdd.query2 import exec_query2_rdd
@@ -124,7 +125,7 @@ class SparkController:
         elif query_num == 4:
             print("Executing query 4 in DataFrame with Spark Core..")
             # Query 4
-            return exec_query4(df)
+            return exec_query4_parallel(df)
         
         else:
             raise SparkError("Invalid query")
