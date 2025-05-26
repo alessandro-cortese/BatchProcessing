@@ -18,6 +18,10 @@ from query.rdd.query1 import exec_query1_rdd
 from query.rdd.query2 import exec_query2_rdd
 from query.rdd.query3 import exec_query3_rdd
 
+from query.sparkSQL.query1 import exec_query1_sql
+from query.sparkSQL.query2 import exec_query2_sql
+from query.sparkSQL.query3 import exec_query3_sql
+
 DATASET_FILE_NAME = "merged"
 PRE_PROCESSED_FILE_NAME = "dataset"
 class SparkController:
@@ -101,6 +105,10 @@ class SparkController:
             res = self.query_spark_core_rdd(self._query_num, rdd)
             self._results.append(res)
 
+        elif type == "sparkSQL":
+            res = self.query_spark_sql_dataframe(self._query_num, df)
+            self._results.append(res)
+
         return self
     
     
@@ -148,6 +156,28 @@ class SparkController:
             # Query 3
             return exec_query3_rdd(rdd)
 
+        else:
+            raise SparkError("Invalid query")
+    
+    def query_spark_sql_dataframe(self, query_num: int, df: DataFrame) -> QueryResult:
+        """Executes a query using SparkSQL. Using DataFrame."""
+        df.createOrReplaceTempView("ElectricityData")
+        if query_num == 1:
+            print("Executing query 1 in DataFrame with SparkSQL..")
+            # Query 1
+            return exec_query1_sql(df)
+        
+        elif query_num == 2:
+            print("Executing query 2 in DataFrame with SparkSQL..")
+            # Query 2
+            return exec_query2_sql(df)
+        
+        elif query_num == 3:
+            print("Executing query 3 in DataFrame with SparkSQL..")
+            # Query 3
+            return exec_query3_sql(df)
+        
+        
         else:
             raise SparkError("Invalid query")
 

@@ -1,7 +1,6 @@
 import time
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, year, avg
-from api.spark_api import SparkAPI
 from model.model import QueryResult, SparkActionResult
 from pyspark.rdd import RDD  
 
@@ -29,7 +28,7 @@ def exec_query2_dataframe(df: DataFrame) -> QueryResult:
     # 2. Filter for Italy and Sweden
     df = df.filter(col("Country").isin("Italy"))
 
-    # 2. Group by Year and Month, then compute aggregates
+    # 3. Group by Year and Month, then compute aggregates
     result_df = df.groupBy("Year", "Month").agg(
         avg("Carbon_intensity_gCO_eq_kWh").alias("Carbon_Intensity"),
         avg("Carbon_free_energy_percentage__CFE").alias("CFE"),
