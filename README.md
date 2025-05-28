@@ -79,10 +79,10 @@ The system is designed to run fully in Docker containers. Scripts to manage the 
   cd docker/
 ```
 ```bash
-├── setup.sh # Builds and starts entire architecture
+├── setup.sh              # Builds and starts entire architecture
 ├── start_spark_client.sh # Launch Spark client to run queries
-├── stop_architecture.sh # Stops and removes all containers
-└── stop_spark_client.sh # Stops and removes Spark client container
+├── stop_architecture.sh  # Stops and removes all containers
+└── stop_spark_client.sh  # Stops and removes Spark client container
 ```
 
 ## 📚 References
