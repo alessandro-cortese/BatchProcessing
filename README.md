@@ -55,34 +55,35 @@ Only the **direct carbon intensity** and **carbon-free energy percentage (CFE%)*
 
 ## 💾 Data Ingestion & Output
 
-### Ingestion
-- The data ingestion pipeline is implemented using Apache NiFi, which handles:
-    - Fetching hourly datasets for Italy and Sweden
-    - Basic preprocessing (e.g., column renaming or filtering, if needed)
-    - Loading the cleaned data into HDFS for further processing by Spark
+- The ingestion pipeline is built with **Apache NiFi** and follows this process:
+
+1. **Merge all CSVs** into a single file.
+2. **Drop unnecessary columns** (e.g., renewable energy share).
+3. **Convert to Parquet format** and save as `merged.parquet` on HDFS using `PutParquet`.
 
 
 ## ⚙️ System Architecture
 
-- **Processing Engine:** Apache Spark (Standalone or via Docker Compose)
+- **Processing Engine:** Apache Spark (via Docker Compose)
+- **Data Flow:** Apache NiFi
 - **Storage:**
   - Input: HDFS
-  - Output: HDFS + optional external storage (Redis, HBase, etc.)
+  - Output: HDFS + Redis
 - **Visualization:** Grafana
-- **Optional Cloud Deployment:** Amazon EMR or other cloud platforms
+- **Deployment:** Fully containerized via Docker Compose
 
 
-## ⏱️ Performance Evaluation
-
-- Measure and report **execution times** for each query.
-- If using both Spark and Spark SQL:
-  - Compare performance between both approaches.
-  - Include comparison results in the final report.
-
-
-## 📦 Project Structure
-TBD
-
+## 🐳 Build & Run the Architecture (Docker)
+The system is designed to run fully in Docker containers. Scripts to manage the full pipeline:
+```bash
+  cd docker/
+```
+```bash
+├── setup.sh # Builds and starts entire architecture
+├── start_spark_client.sh # Launch Spark client to run queries
+├── stop_architecture.sh # Stops and removes all containers
+└── stop_spark_client.sh # Stops and removes Spark client container
+```
 
 ## 📚 References
 
