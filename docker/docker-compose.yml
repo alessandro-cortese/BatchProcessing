@@ -99,20 +99,20 @@ services:
       - SPARK_WORKER_CORES=1
     tty: true
     depends_on:
-      - spark-worker2
-
-  spark-worker2:
-    container_name: spark-worker2
-    image: bitnami/spark
-    networks:
-      - batch_processing_network
-    environment:
-      - SPARK_MODE=worker
-      - SPARK_WORKER_MEMORY=1G
-      - SPARK_WORKER_CORES=1
-    tty: true
-    depends_on:
       - redis
+
+  # spark-worker2:
+  #   container_name: spark-worker2
+  #   image: bitnami/spark
+  #   networks:
+  #     - batch_processing_network
+  #   environment:
+  #     - SPARK_MODE=worker
+  #     - SPARK_WORKER_MEMORY=1G
+  #     - SPARK_WORKER_CORES=1
+  #   tty: true
+  #   depends_on:
+  #     - redis
       
   ## REDIS
   redis:

@@ -1,9 +1,14 @@
+import argparse
 from controller.spark import SparkController
 from model.model import DataFormat
-from engineering.execution_logger import QueryExecutionLogger
+from performance_logger import QueryExecutionLogger
 
 def main():
-    print("Init SparkController...")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--workers", type=int, help="Expected number of Spark workers", required=True)
+    args = parser.parse_args()
+
+    print(f"Expected Spark cluster size: {args.workers} workers")
 
     print("Start Query with DataFrame")
     for i in range(1, 5):
@@ -30,8 +35,8 @@ def main():
         sc.write_results("sparkSQL")
 
     sc.close_session()
-    QueryExecutionLogger().export_csv("query_exec_log.csv")
 
+    QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_workers.csv")
     print("SparkController finished")
 
 if __name__ == "__main__":

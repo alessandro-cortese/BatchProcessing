@@ -6,6 +6,8 @@ from typing import List
 class DataFormat(Enum):
     """Format of the data to read"""
     PARQUET = "parquet"
+    CSV = "csv"
+    AVRO = "avro"
 
 
 class SparkActionResult:

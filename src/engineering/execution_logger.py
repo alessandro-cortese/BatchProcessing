@@ -61,3 +61,7 @@ def track_query(query_name: str, query_type: str):
             return result
         return wrapper
     return decorator
+
+def get_num_active_executors(spark):
+    executor_infos = spark.sparkContext._jsc.sc().statusTracker().getExecutorInfos()
+    return sum(1 for ex in executor_infos if ex.executorId() != "driver")

@@ -62,40 +62,6 @@ class SparkController:
         spark_api.write_to_hdfs(df, filename=PRE_PROCESSED_FILE_NAME, format=self._data_format)
 
         return self
-
-    # def processing_data(self, type: str) -> SparkController:
-    #     """Process data """
-    #     assert self._data_format is not None, "Data format not set"
-    #     api = SparkAPI.get()
-
-    #     print("Reading data from HDFS in format " + self._data_format.name)
-
-    #     df = api.read_from_hdfs(self._data_format, PRE_PROCESSED_FILE_NAME, "dataset")
-        
-    #     # Clear eventual previous results
-    #     self._results.clear()
-
-    #     if type == "dataframe":
-            
-    #         res = self.query_spark_core_dataframe(self._query_num, df)
-    #         self._results.append(res)
-
-    #     elif type == "rdd":
-            
-    #         rdd = df.rdd.map(lambda row: (
-    #             row["Country"],
-    #             row["Datetime_UTC"],
-    #             row["Carbon_intensity_gCO_eq_kWh"],
-    #             row["Carbon_free_energy_percentage__CFE"]
-    #         ))
-    #         res = self.query_spark_core_rdd(self._query_num, rdd)
-    #         self._results.append(res)
-
-    #     elif type == "sparkSQL":
-    #         res = self.query_spark_sql_dataframe(self._query_num, df)
-    #         self._results.append(res)
-
-    #     return self
     
     def processing_data(self, type: str) -> SparkController:
         assert self._data_format is not None, "Data format not set"
@@ -117,7 +83,7 @@ class SparkController:
             func = QUERY_FUNCTIONS["rdd"].get(self._query_num)
             if func is None:
                 raise SparkError("Invalid RDD query")
-            res = func(rdd, spark=spark)  # ✅ Passa la sessione
+            res = func(rdd, spark=spark)  
         else:
             if type == "sparkSQL":
                 df.createOrReplaceTempView("ElectricityData")
@@ -125,7 +91,7 @@ class SparkController:
             func = QUERY_FUNCTIONS[type].get(self._query_num)
             if func is None:
                 raise SparkError("Invalid query for type: " + type)
-            res = func(df, spark=spark)  # ✅ Passa la sessione
+            res = func(df, spark=spark)  
 
         self._results.append(res)
         return self
