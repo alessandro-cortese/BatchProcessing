@@ -1,0 +1,11 @@
+query_name,query_type,execution_time_sec,num_executors,extra_info
+query1,Dataframe,1.386,unknown,
+query2,Dataframe,0.758,unknown,
+query3,Dataframe,0.84,unknown,
+query4,Dataframe,18.841,unknown,
+query1,RDD,3.483,unknown,
+query2,RDD,4.574,unknown,
+query3,RDD,3.189,unknown,
+query1,SparkSQL,0.255,unknown,
+query2,SparkSQL,0.29,unknown,
+query3,SparkSQL,0.295,unknown,

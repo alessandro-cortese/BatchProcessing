@@ -3,6 +3,8 @@ from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, year, min, max, avg
 from model.model import QueryResult, SparkActionResult
 from pyspark.rdd import RDD  
+from engineering.execution_logger import track_query
+from pyspark.sql import SparkSession
 from datetime import datetime
 
 HEADER = [
@@ -14,7 +16,8 @@ HEADER = [
 
 SORT_LIST = ["Country", "Year"]
 
-def exec_query1_dataframe(df: DataFrame) -> QueryResult:
+@track_query("query1", "Dataframe")
+def exec_query1_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
     """
     Executes Query 1 using only the DataFrame API.
     Input DataFrame columns:
@@ -26,13 +29,13 @@ def exec_query1_dataframe(df: DataFrame) -> QueryResult:
 
     start_time = time.time()
 
-    # 1. Add Year column
+    # Add Year column
     df = df.withColumn("Year", year(col("Datetime_UTC")))
 
-    # 2. Filter for Italy and Sweden
+    # Filter for Italy and Sweden
     df = df.filter(col("Country").isin("Italy", "Sweden"))
 
-    # 2. Group by Country and Year, then compute aggregates
+    # Group by Country and Year, then compute aggregates
     result_df = df.groupBy("Country", "Year").agg(
         avg("Carbon_intensity_gCO_eq_kWh").alias("Avg_Carbon_Intensity"),
         min("Carbon_intensity_gCO_eq_kWh").alias("Min_Carbon_Intensity"),
@@ -44,12 +47,12 @@ def exec_query1_dataframe(df: DataFrame) -> QueryResult:
 
     end_time = time.time()
 
-    # 3. Trigger computation
+    # Trigger computation
     out_res = [tuple(row) for row in result_df.collect()]
 
     print("Query execution finished.")
 
-    # 4. Wrap result in QueryResult
+    # Wrap result in QueryResult
     res = QueryResult(name="query1", results=[
         SparkActionResult(
             name="query1",

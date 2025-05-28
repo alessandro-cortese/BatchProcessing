@@ -2,6 +2,8 @@ import time
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, year, avg
 from model.model import QueryResult, SparkActionResult
+from engineering.execution_logger import track_query
+from pyspark.sql import SparkSession
 from pyspark.rdd import RDD  
 
 HEADER = [
@@ -10,7 +12,8 @@ HEADER = [
 
 SORT_LIST = []
 
-def exec_query2_dataframe(df: DataFrame) -> QueryResult:
+@track_query("query2", "Dataframe")
+def exec_query2_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
     """
     Executes Query 1 using only the DataFrame API.
     Input DataFrame columns:
@@ -22,13 +25,13 @@ def exec_query2_dataframe(df: DataFrame) -> QueryResult:
 
     start_time = time.time()
 
-    # 1. Add Year column
+    # Add Year column
     df = df.withColumn("Year", year(col("Datetime_UTC")))
 
-    # 2. Filter for Italy and Sweden
+    # Filter for Italy and Sweden
     df = df.filter(col("Country").isin("Italy"))
 
-    # 3. Group by Year and Month, then compute aggregates
+    # Group by Year and Month, then compute aggregates
     result_df = df.groupBy("Year", "Month").agg(
         avg("Carbon_intensity_gCO_eq_kWh").alias("Carbon_Intensity"),
         avg("Carbon_free_energy_percentage__CFE").alias("CFE"),
@@ -36,26 +39,26 @@ def exec_query2_dataframe(df: DataFrame) -> QueryResult:
 
     end_time = time.time()
 
-    result_df.cache()  # Evitiamo di rieseguire la query 4 volte
+    result_df.cache()  
 
-    # Top 5 per Carbon_Intensity decrescente
+    # Top 5 Carbon_Intensity descendent
     top5_CI_desc = result_df.orderBy(col("Carbon_Intensity").desc()).limit(5).collect()
 
-    # Top 5 per Carbon_Intensity crescente
+    # Top 5 Carbon_Intensity ascendent
     top5_CI_asc = result_df.orderBy(col("Carbon_Intensity").asc()).limit(5).collect()
     
-    # Top 5 per CFE decrescente
+    # Top 5 CFE descented
     top5_CFE_desc = result_df.orderBy(col("CFE").desc()).limit(5).collect()
 
-    # Top 5 per CFE crescente
+    # Top 5 CFE ascendent
     top5_CFE_asc = result_df.orderBy(col("CFE").asc()).limit(5).collect()
 
-    # Unione dei risultati
+    # Union of the results
     out_res = [tuple(row) for row in (top5_CI_desc + top5_CI_asc + top5_CFE_desc + top5_CFE_asc)]
 
     print("Query execution finished.")
 
-    # 4. Wrap result in QueryResult
+    # Wrap result in QueryResult
     res = QueryResult(name="query2", results=[
         SparkActionResult(
             name="query2",

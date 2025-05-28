@@ -3,9 +3,12 @@ from pyspark.sql import DataFrame
 from api.spark_api import SparkAPI
 from model.model import SparkActionResult, QueryResult
 from query.dataframe.query3 import HEADER, SORT_LIST
+from pyspark.sql import SparkSession
 
+from engineering.execution_logger import track_query
 
-def exec_query3_sql(df: DataFrame) -> QueryResult:
+@track_query("query3", "SparkSQL")
+def exec_query3_sql(df: DataFrame, spark: SparkSession) -> QueryResult:
     # @param df : DataFrame of ['Country', 'Metric', 'Min', 'P25', 'P50', 'P75', 'Max']
     
     # SQL query

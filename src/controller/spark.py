@@ -1,29 +1,15 @@
 from __future__ import annotations
-
 from model.model import DataFormat, SparkError, QueryResult
 from engineering.files import write_result_as_csv, write_evaluation, results_path_from_filename
 from api.spark_api import SparkAPI
 from engineering.redis import RedisAPI
 from pyspark.rdd import RDD
-from pyspark.sql.functions import year, month, to_timestamp, col, dayofmonth, hour
-from pyspark.sql import DataFrame, Row
-
-from query.dataframe.query1 import exec_query1_dataframe
-from query.dataframe.query2 import exec_query2_dataframe
-from query.dataframe.query3 import exec_query3_dataframe
-from query.dataframe.query4 import exec_query4
-from query.dataframe.query4 import exec_query4_parallel
-
-from query.rdd.query1 import exec_query1_rdd
-from query.rdd.query2 import exec_query2_rdd
-from query.rdd.query3 import exec_query3_rdd
-
-from query.sparkSQL.query1 import exec_query1_sql
-from query.sparkSQL.query2 import exec_query2_sql
-from query.sparkSQL.query3 import exec_query3_sql
+from pyspark.sql.functions import year, month, col, dayofmonth, hour
+from controller.query_function import QUERY_FUNCTIONS
 
 DATASET_FILE_NAME = "merged"
 PRE_PROCESSED_FILE_NAME = "dataset"
+
 class SparkController:
     
     def __init__(self, query: int, write_evaluation: bool = False, local_write: bool = False):
@@ -77,109 +63,72 @@ class SparkController:
 
         return self
 
+    # def processing_data(self, type: str) -> SparkController:
+    #     """Process data """
+    #     assert self._data_format is not None, "Data format not set"
+    #     api = SparkAPI.get()
+
+    #     print("Reading data from HDFS in format " + self._data_format.name)
+
+    #     df = api.read_from_hdfs(self._data_format, PRE_PROCESSED_FILE_NAME, "dataset")
+        
+    #     # Clear eventual previous results
+    #     self._results.clear()
+
+    #     if type == "dataframe":
+            
+    #         res = self.query_spark_core_dataframe(self._query_num, df)
+    #         self._results.append(res)
+
+    #     elif type == "rdd":
+            
+    #         rdd = df.rdd.map(lambda row: (
+    #             row["Country"],
+    #             row["Datetime_UTC"],
+    #             row["Carbon_intensity_gCO_eq_kWh"],
+    #             row["Carbon_free_energy_percentage__CFE"]
+    #         ))
+    #         res = self.query_spark_core_rdd(self._query_num, rdd)
+    #         self._results.append(res)
+
+    #     elif type == "sparkSQL":
+    #         res = self.query_spark_sql_dataframe(self._query_num, df)
+    #         self._results.append(res)
+
+    #     return self
+    
     def processing_data(self, type: str) -> SparkController:
-        """Process data """
         assert self._data_format is not None, "Data format not set"
         api = SparkAPI.get()
+        spark = api.session 
 
         print("Reading data from HDFS in format " + self._data_format.name)
-
         df = api.read_from_hdfs(self._data_format, PRE_PROCESSED_FILE_NAME, "dataset")
-        
-        # Clear eventual previous results
+
         self._results.clear()
 
-        if type == "dataframe":
-            
-            res = self.query_spark_core_dataframe(self._query_num, df)
-            self._results.append(res)
-
-        elif type == "rdd":
-            
+        if type == "rdd":
             rdd = df.rdd.map(lambda row: (
                 row["Country"],
                 row["Datetime_UTC"],
                 row["Carbon_intensity_gCO_eq_kWh"],
                 row["Carbon_free_energy_percentage__CFE"]
             ))
-            res = self.query_spark_core_rdd(self._query_num, rdd)
-            self._results.append(res)
+            func = QUERY_FUNCTIONS["rdd"].get(self._query_num)
+            if func is None:
+                raise SparkError("Invalid RDD query")
+            res = func(rdd, spark=spark)  # ✅ Passa la sessione
+        else:
+            if type == "sparkSQL":
+                df.createOrReplaceTempView("ElectricityData")
 
-        elif type == "sparkSQL":
-            res = self.query_spark_sql_dataframe(self._query_num, df)
-            self._results.append(res)
+            func = QUERY_FUNCTIONS[type].get(self._query_num)
+            if func is None:
+                raise SparkError("Invalid query for type: " + type)
+            res = func(df, spark=spark)  # ✅ Passa la sessione
 
+        self._results.append(res)
         return self
-    
-    
-    def query_spark_core_dataframe(self, query_num: int, df: DataFrame) -> QueryResult:
-        """Executes a query using Spark Core. Using DataFrame."""
-        
-        if query_num == 1:
-            print("Executing query 1 in DataFrame with Spark Core..")
-            # Query 1
-            return exec_query1_dataframe(df)
-        
-        elif query_num == 2:
-            print("Executing query 2 in DataFrame with Spark Core..")
-            # Query 2
-            return exec_query2_dataframe(df)
-        
-        elif query_num == 3:
-            print("Executing query 3 in DataFrame with Spark Core..")
-            # Query 3
-            return exec_query3_dataframe(df)
-        
-        elif query_num == 4:
-            print("Executing query 4 in DataFrame with Spark Core..")
-            # Query 4
-            return exec_query4_parallel(df)
-        
-        else:
-            raise SparkError("Invalid query")
-        
-    def query_spark_core_rdd(self, query_num: int, rdd: RDD) -> QueryResult:
-        """Executes a query using Spark Core. Using RDD."""
-        
-        if query_num == 1:
-            print("Executing query 1 in RDD with Spark Core..")
-            # Query 1
-            return exec_query1_rdd(rdd)
-        
-        elif query_num == 2:
-            print("Executing query 2 in RDD with Spark Core..")
-            # Query 2
-            return exec_query2_rdd(rdd)
-        
-        elif query_num == 3:
-            print("Executing query 3 in RDD with Spark Core..")
-            # Query 3
-            return exec_query3_rdd(rdd)
-
-        else:
-            raise SparkError("Invalid query")
-    
-    def query_spark_sql_dataframe(self, query_num: int, df: DataFrame) -> QueryResult:
-        """Executes a query using SparkSQL. Using DataFrame."""
-        df.createOrReplaceTempView("ElectricityData")
-        if query_num == 1:
-            print("Executing query 1 in DataFrame with SparkSQL..")
-            # Query 1
-            return exec_query1_sql(df)
-        
-        elif query_num == 2:
-            print("Executing query 2 in DataFrame with SparkSQL..")
-            # Query 2
-            return exec_query2_sql(df)
-        
-        elif query_num == 3:
-            print("Executing query 3 in DataFrame with SparkSQL..")
-            # Query 3
-            return exec_query3_sql(df)
-        
-        
-        else:
-            raise SparkError("Invalid query")
 
         
     def write_results(self, type: str) -> SparkController:

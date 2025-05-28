@@ -41,7 +41,6 @@ services:
     depends_on:
       - slave1
     
-
   slave1 :
     container_name: hdfs-worker1
     image: matnar/hadoop
@@ -135,8 +134,8 @@ services:
     networks:
       - batch_processing_network
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER={$GRAFANA_USERNAME}
+      - GF_SECURITY_ADMIN_PASSWORD={$GRAFANA_PASSWORD}
     volumes:
       - grafana-storage:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning

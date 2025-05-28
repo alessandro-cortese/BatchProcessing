@@ -3,6 +3,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql import Row
 from datetime import datetime
 from model.model import QueryResult, SparkActionResult
+from engineering.execution_logger import track_query
+from pyspark.sql import SparkSession
 import time
 
 HEADER = [
@@ -13,7 +15,8 @@ HEADER = [
 
 SORT_LIST = ["Country", "Year"]
 
-def exec_query1_rdd(rdd: RDD) -> QueryResult:
+@track_query("query1", "RDD")
+def exec_query1_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
     """
     Executes Query 1 using RDD for computation, then converts to DataFrame for output.
     Input RDD is composed of tuples:
@@ -23,7 +26,7 @@ def exec_query1_rdd(rdd: RDD) -> QueryResult:
     print("Starting to evaluate query 1 with RDD...")
 
     start_time = time.time()
-
+    # Filter for Italy and Sweden
     rdd = rdd.filter(lambda row: row[0] in ["Italy", "Sweden"])
 
     def extract(row):

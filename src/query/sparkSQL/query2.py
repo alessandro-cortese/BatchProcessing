@@ -3,9 +3,12 @@ from pyspark.sql import DataFrame
 from api.spark_api import SparkAPI
 from model.model import SparkActionResult, QueryResult
 from query.dataframe.query2 import HEADER, SORT_LIST
+from pyspark.sql import SparkSession
 
+from engineering.execution_logger import track_query
 
-def exec_query2_sql(df: DataFrame) -> QueryResult:
+@track_query("query2", "SparkSQL")
+def exec_query2_sql(df: DataFrame, spark: SparkSession) -> QueryResult:
     # @param df : DataFrame of ['Year', 'Month', 'Carbon_Intensity', 'CFE']
 
 

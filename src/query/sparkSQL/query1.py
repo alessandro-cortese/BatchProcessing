@@ -3,9 +3,11 @@ from pyspark.sql import DataFrame
 from api.spark_api import SparkAPI
 from model.model import SparkActionResult, QueryResult
 from query.dataframe.query1 import HEADER, SORT_LIST
+from engineering.execution_logger import track_query
+from pyspark.sql import SparkSession
 
-
-def exec_query1_sql(df: DataFrame) -> QueryResult:
+@track_query("query1", "SparkSQL")
+def exec_query1_sql(df: DataFrame, spark: SparkSession) -> QueryResult:
     # @param df : DataFrame of ['Country', 'Year', 'Avg_Carbon_Intensity', 'Min_Carbon_Intensity', 'Max_Carbon_Intensity', 'Avg_CFE', 'Min_CFE', 'Max_CFE']
 
     # SQL query

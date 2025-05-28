@@ -4,13 +4,14 @@ from pyspark.sql.functions import col, year, avg
 from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator
 from pyspark.ml.feature import VectorAssembler
-from api.spark_api import SparkAPI
 from model.model import QueryResult, SparkActionResult
+from engineering.execution_logger import track_query
+from pyspark.sql import SparkSession
 
 HEADER = ["Country", "Cluster"]
 SORT_LIST = ["Cluster", "Country"]
 
-# Lista dei paesi richiesti
+# Lists of country selected
 COUNTRIES = [
     "Austria", "Belgium", "France", "Finland", "Germany", "Great Britain", "Ireland", "Italy", "Norway",
     "Poland", "Czechia", "Slovenia", "Spain", "Sweden", "Switzerland",
@@ -18,7 +19,8 @@ COUNTRIES = [
     "Egypt", "Japan", "Kenya", "Kuwait", "Mexico", "Qatar", "Seychelles"
 ]
 
-def exec_query4(df: DataFrame) -> QueryResult:
+@track_query("query4", "Dataframe")
+def exec_query4(df: DataFrame, spark: SparkSession) -> QueryResult:
     """
     Performs k-means clustering of annual average carbon intensity values for 2024 
     on a set of 30 selected countries. Determines the optimal k by silhouette score.
@@ -26,19 +28,19 @@ def exec_query4(df: DataFrame) -> QueryResult:
     print("Starting to evaluate query 4 (Clustering)...")
     start_time = time.time()
 
-    # Filtro per i soli paesi d'interesse e per l'anno 2024
+    # Filter for selected country and year 2024
     df_filtered = df.filter((col("Country").isin(COUNTRIES)) & (year(col("Datetime_UTC")) == 2024))
 
-    # Calcolo della media annua per ciascun paese
+    # Calculate avg mean for each country
     df_avg = df_filtered.groupBy("Country").agg(
         avg("Carbon_intensity_gCO_eq_kWh").alias("Avg_Carbon_Intensity")
     )
 
-    # Preparo la colonna features per KMeans
+    # Preparing the column feature for KMeans Algo
     assembler = VectorAssembler(inputCols=["Avg_Carbon_Intensity"], outputCol="features")
     df_vector = assembler.transform(df_avg)
 
-    # Ricerca del k ottimale usando silhouette score
+    # Search optimal k using Silhouette Score
     best_k = 2
     best_score = -1
     for k in range(2, 15):
@@ -56,7 +58,7 @@ def exec_query4(df: DataFrame) -> QueryResult:
 
     print(f"Best k determined: {best_k}")
 
-    # Esegue il clustering finale con il k ottimale
+    # Run clustering with optimal k finded
     final_model = KMeans().setK(best_k).setSeed(42).setFeaturesCol("features").fit(df_vector)
     final_predictions = final_model.transform(df_vector)
 
@@ -77,7 +79,8 @@ def exec_query4(df: DataFrame) -> QueryResult:
         )
     ])
 
-def exec_query4_parallel(df: DataFrame) -> QueryResult:
+@track_query("query4", "Dataframe")
+def exec_query4_parallel(df: DataFrame, spark: SparkSession) -> QueryResult:
     """
     Performs k-means clustering of annual average carbon intensity values for 2024 
     on a set of 30 selected countries. Determines the optimal k by silhouette score.
@@ -85,19 +88,19 @@ def exec_query4_parallel(df: DataFrame) -> QueryResult:
     print("Starting to evaluate query 4 (Clustering)...")
     start_time = time.time()
 
-    # Filtro per i soli paesi d'interesse e per l'anno 2024
+    # Filter for selected country and year 2024
     df_filtered = df.filter((col("Country").isin(COUNTRIES)) & (year(col("Datetime_UTC")) == 2024))
 
-    # Calcolo della media annua per ciascun paese
+    # Calculate avg mean for each country
     df_avg = df_filtered.groupBy("Country").agg(
         avg("Carbon_intensity_gCO_eq_kWh").alias("Avg_Carbon_Intensity")
     )
 
-    # Preparo la colonna features per KMeans
+    # Preparing the column feature for KMeans Algo
     assembler = VectorAssembler(inputCols=["Avg_Carbon_Intensity"], outputCol="features")
     df_vector = assembler.transform(df_avg)
 
-    # Ricerca del k ottimale usando silhouette score
+    # Search optimal k using Silhouette Score
     best_k = 2
     best_score = -1
     for k in range(2, 15):
@@ -115,7 +118,7 @@ def exec_query4_parallel(df: DataFrame) -> QueryResult:
 
     print(f"Best k determined: {best_k}")
 
-    # Esegue il clustering finale con il k ottimale
+    # Run clustering with optimal k finded
     final_model = KMeans().setK(best_k).setSeed(42).setFeaturesCol("features").setInitMode("k-means||").fit(df_vector)
     final_predictions = final_model.transform(df_vector)
 
