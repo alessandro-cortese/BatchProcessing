@@ -10,8 +10,6 @@ source .env
 
 echo "Start SetUp with $NUM_WORKERS Spark workers..."
 
-docker compose down -v
-
 docker compose build --no-cache
 
 docker compose up -d --scale spark-worker=$NUM_WORKERS

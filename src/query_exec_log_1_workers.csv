@@ -1,0 +1,4 @@
+query_name,query_type,execution_time_sec,num_executors,extra_info
+query1,Dataframe,1.101,unknown,
+query1,Dataframe,1.41,unknown,
+query1,Dataframe,1.025,unknown,

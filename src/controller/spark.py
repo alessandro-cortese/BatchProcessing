@@ -30,7 +30,7 @@ class SparkController:
         print("Reading data from HDFS in format: " + self._data_format.name)
         # Retrieve the dataframe by reading from HDFS based on the data form
         spark_api = SparkAPI.get()
-        df = spark_api.read_from_hdfs(self._data_format, DATASET_FILE_NAME, "nifi")
+        df = spark_api.read_from_hdfs(DataFormat.PARQUET, DATASET_FILE_NAME, "nifi")
 
         print("Preparing data for processing..")
         
@@ -58,9 +58,13 @@ class SparkController:
                 col("Hour")
             )
         )
-        # df.show(50, truncate=False)
-        spark_api.write_to_hdfs(df, filename=PRE_PROCESSED_FILE_NAME, format=self._data_format)
+        if self._data_format == DataFormat.CSV:
+            print(f"Converting {PRE_PROCESSED_FILE_NAME}.parquet to {self._data_format.name.lower()}...")
+            spark_api.convert_parquet_to_format(PRE_PROCESSED_FILE_NAME, PRE_PROCESSED_FILE_NAME, self._data_format)
+        else:
+            spark_api.write_to_hdfs(df, filename=PRE_PROCESSED_FILE_NAME, format=self._data_format)
 
+    
         return self
     
     def processing_data(self, type: str) -> SparkController:
@@ -68,8 +72,15 @@ class SparkController:
         api = SparkAPI.get()
         spark = api.session 
 
-        print("Reading data from HDFS in format " + self._data_format.name)
-        df = api.read_from_hdfs(self._data_format, PRE_PROCESSED_FILE_NAME, "dataset")
+        if self._data_format == DataFormat.PARQUET:
+            source = "dataset"
+        elif self._data_format == DataFormat.CSV:
+            source = "csv"
+        elif self._data_format == DataFormat.AVRO:
+            source = "avro"
+
+        print(f"Reading data from HDFS in format: {self._data_format.name}, source: {source}")
+        df = api.read_from_hdfs(self._data_format, PRE_PROCESSED_FILE_NAME, source)
 
         self._results.clear()
 

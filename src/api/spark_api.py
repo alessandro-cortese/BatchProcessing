@@ -38,11 +38,17 @@ class SparkAPI:
     def read_from_hdfs(self, format: DataFormat, filename: str, source: str) -> DataFrame:
         config = Config()
 
+        print(f"SOURCE: {source}")
+
         if source == "nifi":
             path = f"{config.hdfs_dataset_dir_url}/{filename}.{format.value}"
+        elif source == "csv":
+            path = f"{config.hdfs_dataset_preprocessed_dir_csv_url}/{filename}.{format.value}"
+        elif source == "avro":
+            path = f"{config.hdfs_dataset_preprocessed_dir_avro_url}/{filename}.{format.value}"
         else:
             path = f"{config.hdfs_dataset_preprocessed_dir_url}/{filename}.{format.value}"
-        
+
         print(f"path: {path}")
 
         if format == DataFormat.PARQUET:
@@ -61,18 +67,55 @@ class SparkAPI:
         df.coalesce(1).write.csv(path, mode="overwrite", header=True)
 
 
+    # def write_to_hdfs(self, df: DataFrame, filename: str, format: DataFormat) -> None:
+    #     """Write DataFrame to HDFS in the specified format."""
+    #     df = df.coalesce(1)
+    #     config = Config()
+    #     filename = filename + "." + format.name.lower()
+    #     if format == DataFormat.PARQUET:
+    #         path = config.hdfs_dataset_preprocessed_dir_url + "/"+ filename
+    #         print(f"path: {path}")
+    #         df.write.parquet(config.hdfs_dataset_preprocessed_dir_url + "/"+ filename, mode="overwrite")
+    #     else:
+    #         raise ValueError("Invalid data format")
+
     def write_to_hdfs(self, df: DataFrame, filename: str, format: DataFormat) -> None:
-        """Write DataFrame to HDFS in the specified format."""
+        """Write DataFrame to HDFS in the specified format (PARQUET, CSV, AVRO)."""
         df = df.coalesce(1)
         config = Config()
-        filename = filename + "." + format.name.lower()
-        if format == DataFormat.PARQUET:
-            path = config.hdfs_dataset_preprocessed_dir_url + "/"+ filename
-            print(f"path: {path}")
-            df.write.parquet(config.hdfs_dataset_preprocessed_dir_url + "/"+ filename, mode="overwrite")
-        else:
-            raise ValueError("Invalid data format")
         
+        if format == DataFormat.PARQUET:
+            path = config.hdfs_dataset_preprocessed_dir_url + "/" + filename + "." + format.name.lower()
+        elif format == DataFormat.CSV:
+            path = config.hdfs_dataset_preprocessed_dir_csv_url + "/" + filename + "." + format.name.lower()
+        elif format == DataFormat.AVRO:
+            path = config.hdfs_dataset_preprocessed_dir_avro_url + "/" + filename + "." + format.name.lower()
+        
+        print(f"Writing to HDFS path: {path}")
+
+        if format == DataFormat.PARQUET:
+            df.write.parquet(path, mode="overwrite")
+        elif format == DataFormat.CSV:
+            df.write.mode("overwrite").option("header", True).csv(path)
+        elif format == DataFormat.AVRO:
+            df.write.mode("overwrite").format("avro").save(path)
+        else:
+            raise ValueError("Unsupported format for write_to_hdfs.")
+
+    def convert_parquet_to_format(self, input_filename: str, output_filename: str, target_format: DataFormat) -> None:
+        """
+        Converts a Parquet file from HDFS to CSV or Avro using SparkAPI, and writes it back to HDFS.
+        """
+        spark_api = SparkAPI.get()
+
+        print(f"Reading Parquet file '{input_filename}' from HDFS...")
+        df = spark_api.read_from_hdfs(DataFormat.PARQUET, input_filename, source="dataset")
+
+        print(f"Converting to {target_format.name.upper()} and writing to HDFS as '{output_filename}'...")
+        spark_api.write_to_hdfs(df, filename=output_filename, format=target_format)
+
+        print("Conversion completed.")
+
     def df_from_action_result(self, action_res: SparkActionResult) -> DataFrame:
         df = SparkAPI.get().session.createDataFrame(
             action_res.result, schema=action_res.header)

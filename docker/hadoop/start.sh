@@ -18,6 +18,12 @@ $HADOOP_HOME/sbin/start-dfs.sh
 hdfs dfs -mkdir /nifi
 hdfs dfs -chmod 777 /nifi
 
+hdfs dfs -mkdir /avro
+hdfs dfs -chmod 777 /avro
+
+hdfs dfs -mkdir /csv
+hdfs dfs -chmod 777 /csv
+
 hdfs dfs -mkdir /dataset
 hdfs dfs -chmod 777 /dataset
 

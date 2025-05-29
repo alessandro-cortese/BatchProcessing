@@ -1,7 +1,7 @@
 import argparse
 from controller.spark import SparkController
 from model.model import DataFormat
-from performance_logger import QueryExecutionLogger
+from engineering.execution_logger import QueryExecutionLogger
 
 def main():
     parser = argparse.ArgumentParser()
@@ -11,28 +11,47 @@ def main():
     print(f"Expected Spark cluster size: {args.workers} workers")
 
     print("Start Query with DataFrame")
-    for i in range(1, 5):
+    for i in range(1, 2):
         sc = SparkController(i, write_evaluation=False, local_write=True)
         sc.set_data_format(DataFormat.PARQUET)  
         sc.prepare_for_processing()
         sc.processing_data("dataframe")
         sc.write_results("dataframe")
-
-    print("Start Query with RDD")
-    for i in range(1, 4):
+    
+    print("Start Query with DataFrame")
+    for i in range(1, 2):
         sc = SparkController(i, write_evaluation=False, local_write=True)
-        sc.set_data_format(DataFormat.PARQUET)  
+        sc.set_data_format(DataFormat.CSV)  
         sc.prepare_for_processing()
-        sc.processing_data("rdd")
-        sc.write_results("rdd")
+        sc.processing_data("dataframe")
+        sc.write_results("dataframe")
 
-    print("Start Query with SparkSQL")
-    for i in range(1, 4):
+    print("Start Query with DataFrame")
+    for i in range(1, 2):
         sc = SparkController(i, write_evaluation=False, local_write=True)
-        sc.set_data_format(DataFormat.PARQUET)  
+        sc.set_data_format(DataFormat.AVRO)  
         sc.prepare_for_processing()
-        sc.processing_data("sparkSQL")
-        sc.write_results("sparkSQL")
+        sc.processing_data("dataframe")
+        sc.write_results("dataframe")
+
+
+    # print("Start Query with RDD")
+    # for i in range(1, 4):
+    #     sc = SparkController(i, write_evaluation=False, local_write=True)
+    #     sc.set_data_format(DataFormat.PARQUET)  
+    #     sc.prepare_for_processing()
+    #     sc.processing_data("rdd")
+    #     sc.write_results("rdd")
+
+    # print("Start Query with SparkSQL")
+    # for i in range(1, 4):
+    #     sc = SparkController(i, write_evaluation=False, local_write=True)
+    #     sc.set_data_format(DataFormat.PARQUET)  
+    #     sc.prepare_for_processing()
+    #     sc.processing_data("sparkSQL")
+    #     sc.write_results("sparkSQL")
+
+
 
     sc.close_session()
 

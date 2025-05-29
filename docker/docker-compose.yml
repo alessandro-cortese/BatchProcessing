@@ -71,6 +71,8 @@ services:
     networks:
       - batch_processing_network
     tty: true
+    depends_on:
+      - spark-master
 
   ## SPARK
   spark-master:
@@ -86,10 +88,10 @@ services:
       - 7077:7077
     tty: true
     depends_on:
-      - spark-worker1
+      - spark-worker
 
-  spark-worker1:
-    container_name: spark-worker1
+  spark-worker:
+    container_name: spark-worker
     image: bitnami/spark
     networks:
       - batch_processing_network
@@ -98,8 +100,6 @@ services:
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_CORES=1
     tty: true
-    depends_on:
-      - redis
 
   # spark-worker2:
   #   container_name: spark-worker2

@@ -12,4 +12,8 @@ class Config:
     @property
     def hdfs_dataset_preprocessed_dir_url(self): return f"{self.hdfs_url}/dataset"
     @property
+    def hdfs_dataset_preprocessed_dir_csv_url(self): return f"{self.hdfs_url}/csv"
+    @property
+    def hdfs_dataset_preprocessed_dir_avro_url(self): return f"{self.hdfs_url}/avro"
+    @property
     def hdfs_results_dir_url(self): return f"{self.hdfs_url}/results"
