@@ -91,7 +91,6 @@ services:
       - spark-worker
 
   spark-worker:
-    container_name: spark-worker
     image: bitnami/spark
     networks:
       - batch_processing_network

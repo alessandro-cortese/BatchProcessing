@@ -7,6 +7,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--workers", type=int, help="Expected number of Spark workers", required=True)
     args = parser.parse_args()
+    QueryExecutionLogger().clear()
+    QueryExecutionLogger().set_num_executors(args.workers)
 
     print(f"Expected Spark cluster size: {args.workers} workers")
 
@@ -17,6 +19,7 @@ def main():
         sc.prepare_for_processing()
         sc.processing_data("dataframe")
         sc.write_results("dataframe")
+    QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_workers_{DataFormat.PARQUET.name}.csv")
     
     print("Start Query with DataFrame")
     for i in range(1, 2):
@@ -25,6 +28,7 @@ def main():
         sc.prepare_for_processing()
         sc.processing_data("dataframe")
         sc.write_results("dataframe")
+    QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_workers_{DataFormat.CSV.name}.csv")
 
     print("Start Query with DataFrame")
     for i in range(1, 2):
@@ -33,6 +37,7 @@ def main():
         sc.prepare_for_processing()
         sc.processing_data("dataframe")
         sc.write_results("dataframe")
+    QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_workers_{DataFormat.AVRO.name}.csv")
 
 
     # print("Start Query with RDD")
@@ -51,11 +56,7 @@ def main():
     #     sc.processing_data("sparkSQL")
     #     sc.write_results("sparkSQL")
 
-
-
     sc.close_session()
-
-    QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_workers.csv")
     print("SparkController finished")
 
 if __name__ == "__main__":
