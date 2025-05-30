@@ -4,6 +4,7 @@ import os
 from threading import Lock
 from typing import Optional
 
+output_dir = "/performance"
 
 class QueryExecutionLogger:
     _instance = None

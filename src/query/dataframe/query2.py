@@ -5,13 +5,13 @@ from model.model import QueryResult, SparkActionResult
 from engineering.execution_logger import track_query
 from pyspark.sql import SparkSession
 from pyspark.rdd import RDD  
+from model.model import NUM_RUNS_PER_QUERY as runs
 
 HEADER = [
     "Year", "Month", "Carbon_Intensity", "CFE"
 ]
 
-SORT_LIST = []
-
+# check if when we compute csv the columns are added
 @track_query("query2", "Dataframe")
 def exec_query2_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
     """
@@ -22,57 +22,50 @@ def exec_query2_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
 
     print("Starting to evaluate query 2 with DataFrame...")
 
+    execution_times = []
+    out_res = None 
 
-    start_time = time.time()
+    for i in range(runs):
+        print(f"\nRun {i+1}/{runs}")
+        start_time = time.time()
 
-    # Add Year column
-    df = df.withColumn("Year", year(col("Datetime_UTC")))
+        # Filter for Italy 
+        temp_df = df.filter(col("Country") == "Italy")
+        # Group by Year and Month
+        result_df = temp_df.groupBy("Year", "Month").agg(
+            avg("Carbon_intensity_gCO_eq_kWh").alias("Carbon_Intensity"),
+            avg("Carbon_free_energy_percentage__CFE").alias("CFE"),
+        ).orderBy("Year", "Month")
 
-    # Filter for Italy and Sweden
-    df = df.filter(col("Country").isin("Italy"))
+        # Trigger computation
+        result_df.collect()
 
-    # Group by Year and Month, then compute aggregates
-    result_df = df.groupBy("Year", "Month").agg(
-        avg("Carbon_intensity_gCO_eq_kWh").alias("Carbon_Intensity"),
-        avg("Carbon_free_energy_percentage__CFE").alias("CFE"),
-    ).orderBy("Year")
+        end_time = time.time()
+        exec_time = end_time - start_time
+        execution_times.append(exec_time)
+        print(f"Run {i+1} execution time: {exec_time:.2f} seconds")
 
-    end_time = time.time()
-
-    result_df.cache()  
-
-    # Top 5 Carbon_Intensity descendent
+    # Use the last result_df to compute top-5 values
     top5_CI_desc = result_df.orderBy(col("Carbon_Intensity").desc()).limit(5).collect()
-
-    # Top 5 Carbon_Intensity ascendent
     top5_CI_asc = result_df.orderBy(col("Carbon_Intensity").asc()).limit(5).collect()
-    
-    # Top 5 CFE descented
     top5_CFE_desc = result_df.orderBy(col("CFE").desc()).limit(5).collect()
-
-    # Top 5 CFE ascendent
     top5_CFE_asc = result_df.orderBy(col("CFE").asc()).limit(5).collect()
 
-    # Union of the results
     out_res = [tuple(row) for row in (top5_CI_desc + top5_CI_asc + top5_CFE_desc + top5_CFE_asc)]
 
+    avg_time = sum(execution_times) / runs
+
     print("Query execution finished.")
-
-    # Wrap result in QueryResult
-    res = QueryResult(name="query2", results=[
-        SparkActionResult(
-            name="query2",
-            header=HEADER,
-            sort_list=SORT_LIST,
-            result=out_res,
-            execution_time=end_time - start_time
-        )
-    ])
-
-    time_used = end_time - start_time
+    print(f"Query 2 average time over {runs} runs: {avg_time:.2f} seconds")
 
     result_df.show()
 
-    print(f"Query 2 took {time_used:.2f} seconds")
-
-    return res
+    return QueryResult(name="query2", results=[
+        SparkActionResult(
+            name="query2",
+            header=HEADER,
+            sort_list=[],
+            result=out_res,
+            execution_time=avg_time
+        )
+    ])

@@ -1,10 +1,10 @@
 import time
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, year, avg
+from pyspark.sql.functions import col, avg
 from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator
 from pyspark.ml.feature import VectorAssembler
-from model.model import QueryResult, SparkActionResult
+from model.model import QueryResult, SparkActionResult, NUM_RUNS_PER_QUERY as runs
 from engineering.execution_logger import track_query
 from pyspark.sql import SparkSession
 
@@ -19,55 +19,60 @@ COUNTRIES = [
     "Egypt", "Japan", "Kenya", "Kuwait", "Mexico", "Qatar", "Seychelles"
 ]
 
-@track_query("query4", "Dataframe")
-def exec_query4(df: DataFrame, spark: SparkSession) -> QueryResult:
-    """
-    Performs k-means clustering of annual average carbon intensity values for 2024 
-    on a set of 30 selected countries. Determines the optimal k by silhouette score.
-    """
-    print("Starting to evaluate query 4 (Clustering)...")
-    start_time = time.time()
+def _run_query4_clustering(df: DataFrame, spark: SparkSession, use_parallel: bool) -> QueryResult:
+    execution_times = []
+    final_predictions = None
+    result_rows = []
 
-    # Filter for selected country and year 2024
-    df_filtered = df.filter((col("Country").isin(COUNTRIES)) & (year(col("Datetime_UTC")) == 2024))
+    for i in range(runs):
+        print(f"\nRun {i+1}/{runs}")
+        start_time = time.time()
 
-    # Calculate avg mean for each country
-    df_avg = df_filtered.groupBy("Country").agg(
-        avg("Carbon_intensity_gCO_eq_kWh").alias("Avg_Carbon_Intensity")
-    )
+        df_filtered = df.filter(
+            (col("Country").isin(COUNTRIES)) & ((col("Year")) == 2024)
+        )
 
-    # Preparing the column feature for KMeans Algo
-    assembler = VectorAssembler(inputCols=["Avg_Carbon_Intensity"], outputCol="features")
-    df_vector = assembler.transform(df_avg)
+        df_avg = df_filtered.groupBy("Country").agg(
+            avg("Carbon_intensity_gCO_eq_kWh").alias("Avg_Carbon_Intensity")
+        )
 
-    # Search optimal k using Silhouette Score
-    best_k = 2
-    best_score = -1
-    for k in range(2, 15):
-        kmeans = KMeans().setK(k).setSeed(42).setFeaturesCol("features")
-        model = kmeans.fit(df_vector)
-        predictions = model.transform(df_vector)
+        assembler = VectorAssembler(inputCols=["Avg_Carbon_Intensity"], outputCol="features")
+        df_vector = assembler.transform(df_avg)
 
-        evaluator = ClusteringEvaluator()
-        silhouette = evaluator.evaluate(predictions)
-        print(f"Silhouette score for k={k}: {silhouette:.4f}")
+        best_k = 2
+        best_score = -1
+        for k in range(2, 15):
+            kmeans = KMeans().setK(k).setSeed(42).setFeaturesCol("features")
+            if use_parallel:
+                kmeans = kmeans.setInitMode("k-means||")
 
-        if silhouette > best_score:
-            best_score = silhouette
-            best_k = k
+            model = kmeans.fit(df_vector)
+            predictions = model.transform(df_vector)
 
-    print(f"Best k determined: {best_k}")
+            silhouette = ClusteringEvaluator().evaluate(predictions)
+            # print(f"Silhouette score for k={k}: {silhouette:.4f}") this is just for debugging
 
-    # Run clustering with optimal k finded
-    final_model = KMeans().setK(best_k).setSeed(42).setFeaturesCol("features").fit(df_vector)
-    final_predictions = final_model.transform(df_vector)
+            if silhouette > best_score:
+                best_score = silhouette
+                best_k = k
+
+        print(f"Best k determined: {best_k}")
+
+        final_model = KMeans().setK(best_k).setSeed(42).setFeaturesCol("features")
+        if use_parallel:
+            final_model = final_model.setInitMode("k-means||")
+
+        final_predictions = final_model.fit(df_vector).transform(df_vector)
+        final_predictions.collect()
+
+        end_time = time.time()
+        execution_times.append(end_time - start_time)
 
     result_rows = final_predictions.select("Country", "prediction").rdd.map(
         lambda row: (row["Country"], int(row["prediction"]))
     ).collect()
 
-    end_time = time.time()
-    print(f"Query 4 took {end_time - start_time:.2f} seconds")
+    avg_time = sum(execution_times) / runs
 
     return QueryResult(name="query4", results=[
         SparkActionResult(
@@ -75,66 +80,17 @@ def exec_query4(df: DataFrame, spark: SparkSession) -> QueryResult:
             header=HEADER,
             sort_list=SORT_LIST,
             result=result_rows,
-            execution_time=end_time - start_time
+            execution_time=avg_time
         )
     ])
+
+@track_query("query4", "Dataframe")
+def exec_query4(df: DataFrame, spark: SparkSession) -> QueryResult:
+    print("Starting to evaluate query 4 (Standard Clustering)...")
+    return _run_query4_clustering(df, spark, use_parallel=False)
+
 
 @track_query("query4", "Dataframe")
 def exec_query4_parallel(df: DataFrame, spark: SparkSession) -> QueryResult:
-    """
-    Performs k-means clustering of annual average carbon intensity values for 2024 
-    on a set of 30 selected countries. Determines the optimal k by silhouette score.
-    """
-    print("Starting to evaluate query 4 (Clustering)...")
-    start_time = time.time()
-
-    # Filter for selected country and year 2024
-    df_filtered = df.filter((col("Country").isin(COUNTRIES)) & (year(col("Datetime_UTC")) == 2024))
-
-    # Calculate avg mean for each country
-    df_avg = df_filtered.groupBy("Country").agg(
-        avg("Carbon_intensity_gCO_eq_kWh").alias("Avg_Carbon_Intensity")
-    )
-
-    # Preparing the column feature for KMeans Algo
-    assembler = VectorAssembler(inputCols=["Avg_Carbon_Intensity"], outputCol="features")
-    df_vector = assembler.transform(df_avg)
-
-    # Search optimal k using Silhouette Score
-    best_k = 2
-    best_score = -1
-    for k in range(2, 15):
-        kmeans = KMeans().setK(k).setSeed(42).setFeaturesCol("features").setInitMode("k-means||")
-        model = kmeans.fit(df_vector)
-        predictions = model.transform(df_vector)
-
-        evaluator = ClusteringEvaluator()
-        silhouette = evaluator.evaluate(predictions)
-        print(f"Silhouette score for k={k}: {silhouette:.4f}")
-
-        if silhouette > best_score:
-            best_score = silhouette
-            best_k = k
-
-    print(f"Best k determined: {best_k}")
-
-    # Run clustering with optimal k finded
-    final_model = KMeans().setK(best_k).setSeed(42).setFeaturesCol("features").setInitMode("k-means||").fit(df_vector)
-    final_predictions = final_model.transform(df_vector)
-
-    result_rows = final_predictions.select("Country", "prediction").rdd.map(
-        lambda row: (row["Country"], int(row["prediction"]))
-    ).collect()
-
-    end_time = time.time()
-    print(f"Query 4 took {end_time - start_time:.2f} seconds")
-
-    return QueryResult(name="query4", results=[
-        SparkActionResult(
-            name="query4",
-            header=HEADER,
-            sort_list=SORT_LIST,
-            result=result_rows,
-            execution_time=end_time - start_time
-        )
-    ])
+    print("Starting to evaluate query 4 (Parallel Clustering)...")
+    return _run_query4_clustering(df, spark, use_parallel=True)

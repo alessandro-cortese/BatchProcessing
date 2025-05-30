@@ -2,7 +2,7 @@ import time
 from pyspark.sql import DataFrame
 from api.spark_api import SparkAPI
 from model.model import SparkActionResult, QueryResult
-from query.dataframe.query2 import HEADER, SORT_LIST
+from query.dataframe.query2 import HEADER
 from pyspark.sql import SparkSession
 
 from engineering.execution_logger import track_query
@@ -70,7 +70,7 @@ def exec_query2_sql(df: DataFrame, spark: SparkSession) -> QueryResult:
     res = QueryResult(name="sql-query2", results=[SparkActionResult(
         name="sql-query2",
         header=HEADER,
-        sort_list=SORT_LIST,
+        sort_list=[],
         result=res,
         execution_time=end_time - start_time
     )])

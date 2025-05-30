@@ -1,10 +1,9 @@
 import time
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, hour, avg, percentile_approx
-from model.model import QueryResult, SparkActionResult
+from model.model import QueryResult, SparkActionResult, NUM_RUNS_PER_QUERY as runs
 from engineering.execution_logger import track_query
 from pyspark.sql import SparkSession
-import pandas as pd
 
 HEADER = ["Country", "Metric", "Min", "P25", "P50", "P75", "Max"]
 SORT_LIST = ["Country", "Metric"]
@@ -18,53 +17,63 @@ def exec_query3_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
 
     print("Starting to evaluate query 3 with DataFrame...")
 
+    execution_times = []
     result_rows = []
     countries = ["Italy", "Sweden"]
     metrics = [("Carbon_Intensity", "carbon-intensity"), ("CFE", "cfe")]
+    hourly_avg = None 
 
-    start_time = time.time()
+    for i in range(runs):
+        print(f"\nRun {i+1}/{runs}")
+        start_time = time.time()
 
-    # Extract hour from timestamp to enable hourly aggregation
-    df = df.withColumn("Hour", hour(col("Datetime_UTC")))
+        # Filter for countries and group by Hour
+        temp_df = df.filter(col("Country").isin("Italy", "Sweden"))
 
-    # Filter rows for only Italy and Sweden
-    df = df.filter(col("Country").isin("Italy", "Sweden"))
+        # Compute hourly averages
+        hourly_avg = temp_df.groupBy("Country", "Hour").agg(
+            avg("Carbon_intensity_gCO_eq_kWh").alias("Carbon_Intensity"),
+            avg("Carbon_free_energy_percentage__CFE").alias("CFE")
+        )
 
-    # Compute hourly average values for both Carbon Intensity and CFE per country
-    hourly_avg = df.groupBy("Country", "Hour").agg(
-        avg("Carbon_intensity_gCO_eq_kWh").alias("Carbon_Intensity"),
-        avg("Carbon_free_energy_percentage__CFE").alias("CFE")
-    )
+        # Trigger execution (approximate percentile call forces compute)
+        for country in countries:
+            country_df = hourly_avg.filter(col("Country") == country)
+            for col_name, _ in metrics:
+                country_df.select(
+                    percentile_approx(col_name, [0.0, 0.25, 0.5, 0.75, 1.0])
+                ).collect()
 
-    # For each country and each metric, compute the percentile summary of the hourly averages
+        end_time = time.time()
+        exec_time = end_time - start_time
+        execution_times.append(exec_time)
+        print(f"Run {i+1} execution time: {exec_time:.2f} seconds")
+
+    # Compute final percentiles only once (using last result_df)
     for country in countries:
         country_df = hourly_avg.filter(col("Country") == country)
         for col_name, label in metrics:
-            # Get approximate percentiles: Min, 25%, 50%, 75%, Max
             percentiles = country_df.select(
                 percentile_approx(col_name, [0.0, 0.25, 0.5, 0.75, 1.0])
             ).first()[0]
 
-            # Append results row: (Country Code, Metric Label, P0, P25, P50, P75, P100)
             result_rows.append((
                 "IT" if country == "Italy" else "SE",
                 label,
                 *percentiles
             ))
 
-    end_time = time.time()
+    avg_time = sum(execution_times) / runs
 
-    # Wrap results in QueryResult for unified output format
-    res = QueryResult(name="query3", results=[
+    print("Query execution finished.")
+    print(f"Query 3 average time over {runs} runs: {avg_time:.2f} seconds")
+
+    return QueryResult(name="query3", results=[
         SparkActionResult(
             name="query3",
             header=HEADER,
             sort_list=SORT_LIST,
             result=result_rows,
-            execution_time=end_time - start_time
+            execution_time=avg_time
         )
     ])
-
-    print(f"Query 3 took {end_time - start_time:.2f} seconds")
-
-    return res

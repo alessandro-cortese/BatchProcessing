@@ -9,6 +9,7 @@ class DataFormat(Enum):
     CSV = "csv"
     AVRO = "avro"
 
+NUM_RUNS_PER_QUERY = 10  # fixed number of repetitions for each query
 
 class SparkActionResult:
     """Result of a Spark job"""

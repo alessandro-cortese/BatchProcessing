@@ -13,7 +13,7 @@ def main():
     print(f"Expected Spark cluster size: {args.workers} workers")
 
     print("Start Query with DataFrame")
-    for i in range(1, 2):
+    for i in range(4, 5):
         sc = SparkController(i, write_evaluation=False, local_write=True)
         sc.set_data_format(DataFormat.PARQUET)  
         sc.prepare_for_processing()
@@ -21,23 +21,23 @@ def main():
         sc.write_results("dataframe")
     QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_workers_{DataFormat.PARQUET.name}.csv")
     
-    print("Start Query with DataFrame")
-    for i in range(1, 2):
-        sc = SparkController(i, write_evaluation=False, local_write=True)
-        sc.set_data_format(DataFormat.CSV)  
-        sc.prepare_for_processing()
-        sc.processing_data("dataframe")
-        sc.write_results("dataframe")
-    QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_workers_{DataFormat.CSV.name}.csv")
+    # print("Start Query with DataFrame")
+    # for i in range(4, 5):
+    #     sc = SparkController(i, write_evaluation=False, local_write=True)
+    #     sc.set_data_format(DataFormat.CSV)  
+    #     sc.prepare_for_processing()
+    #     sc.processing_data("dataframe")
+    #     sc.write_results("dataframe")
+    # QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_workers_{DataFormat.CSV.name}.csv")
 
-    print("Start Query with DataFrame")
-    for i in range(1, 2):
-        sc = SparkController(i, write_evaluation=False, local_write=True)
-        sc.set_data_format(DataFormat.AVRO)  
-        sc.prepare_for_processing()
-        sc.processing_data("dataframe")
-        sc.write_results("dataframe")
-    QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_workers_{DataFormat.AVRO.name}.csv")
+    # print("Start Query with DataFrame")
+    # for i in range(4, 5):
+    #     sc = SparkController(i, write_evaluation=False, local_write=True)
+    #     sc.set_data_format(DataFormat.AVRO)  
+    #     sc.prepare_for_processing()
+    #     sc.processing_data("dataframe")
+    #     sc.write_results("dataframe")
+    # QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_workers_{DataFormat.AVRO.name}.csv")
 
 
     # print("Start Query with RDD")
