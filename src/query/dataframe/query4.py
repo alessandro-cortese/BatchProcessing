@@ -64,9 +64,10 @@ def _run_query4_clustering(df: DataFrame, spark: SparkSession, use_parallel: boo
 
         final_predictions = final_model.fit(df_vector).transform(df_vector)
         final_predictions.collect()
-
         end_time = time.time()
-        execution_times.append(end_time - start_time)
+        execution_time = end_time - start_time
+        execution_times.append(execution_time)
+        print(f"Run {i+1} execution time: {execution_time:.2f} seconds")
 
     result_rows = final_predictions.select("Country", "prediction").rdd.map(
         lambda row: (row["Country"], int(row["prediction"]))

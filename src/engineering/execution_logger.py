@@ -23,21 +23,20 @@ class QueryExecutionLogger:
     def get_num_executor(self):
         return self.num_executors
 
-    def log(self, query_name: str, query_type: str, execution_time: float, spark_conf: dict, data_format: Optional[str] = None):
+    def log(self, query_name: str, query_type: str, execution_time: float, spark_conf: dict):
         self.records.append({
             "query_name": query_name,
             "query_type": query_type,
             "execution_time_sec": round(execution_time, 3),
-            "num_executors": self.num_executors,
-            "data_format": data_format or ""
+            "num_executors": self.num_executors
         })
 
     def export_csv(self, filename="query_exec_log.csv"):
         if not self.records:
             print("No records to export.")
             return
-        
-        output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../performance"))
+
+        output_dir = "/performance"
         os.makedirs(output_dir, exist_ok=True)
 
         path = os.path.join(output_dir, filename)
@@ -47,7 +46,9 @@ class QueryExecutionLogger:
             writer = csv.DictWriter(f, fieldnames=keys)
             writer.writeheader()
             writer.writerows(self.records)
+        
         print(f"Exported query performance log to {path}")
+
     
     def clear(self):
         self.records.clear()
@@ -63,8 +64,7 @@ def track_query(query_name: str, query_type: str):
                 query_name=query_name,
                 query_type=query_type,
                 execution_time=end - start,
-                spark_conf={"spark.executor.instances": QueryExecutionLogger().get_num_executor() or "unknown"},
-                data_format=kwargs.get("format_name", "")
+                spark_conf={"spark.executor.instances": QueryExecutionLogger().get_num_executor() or "unknown"}
             )
             return result
         return wrapper

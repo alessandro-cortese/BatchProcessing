@@ -58,6 +58,7 @@ class SparkController:
                 col("Hour")
             )
         )
+        df.show(5, truncate=False)
         if self._data_format == DataFormat.CSV:
             print(f"Converting {PRE_PROCESSED_FILE_NAME}.parquet to {self._data_format.name.lower()}...")
             spark_api.convert_parquet_to_format(PRE_PROCESSED_FILE_NAME, PRE_PROCESSED_FILE_NAME, self._data_format)
@@ -87,7 +88,10 @@ class SparkController:
         if type == "rdd":
             rdd = df.rdd.map(lambda row: (
                 row["Country"],
-                row["Datetime_UTC"],
+                row["Year"],
+                row["Month"],
+                row["Day"],
+                row["Hour"],
                 row["Carbon_intensity_gCO_eq_kWh"],
                 row["Carbon_free_energy_percentage__CFE"]
             ))

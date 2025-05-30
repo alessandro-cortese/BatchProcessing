@@ -12,14 +12,14 @@ def main():
 
     print(f"Expected Spark cluster size: {args.workers} workers")
 
-    print("Start Query with DataFrame")
-    for i in range(4, 5):
-        sc = SparkController(i, write_evaluation=False, local_write=True)
-        sc.set_data_format(DataFormat.PARQUET)  
-        sc.prepare_for_processing()
-        sc.processing_data("dataframe")
-        sc.write_results("dataframe")
-    QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_workers_{DataFormat.PARQUET.name}.csv")
+    # print("Start Query with DataFrame")
+    # for i in range(4, 5):
+    #     sc = SparkController(i, write_evaluation=False, local_write=True)
+    #     sc.set_data_format(DataFormat.PARQUET)  
+    #     sc.prepare_for_processing()
+    #     sc.processing_data("dataframe")
+    #     sc.write_results("dataframe")
+    # QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_workers_{DataFormat.PARQUET.name}.csv")
     
     # print("Start Query with DataFrame")
     # for i in range(4, 5):
@@ -40,13 +40,13 @@ def main():
     # QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_workers_{DataFormat.AVRO.name}.csv")
 
 
-    # print("Start Query with RDD")
-    # for i in range(1, 4):
-    #     sc = SparkController(i, write_evaluation=False, local_write=True)
-    #     sc.set_data_format(DataFormat.PARQUET)  
-    #     sc.prepare_for_processing()
-    #     sc.processing_data("rdd")
-    #     sc.write_results("rdd")
+    print("Start Query with RDD")
+    for i in range(1, 2):
+        sc = SparkController(i, write_evaluation=False, local_write=True)
+        sc.set_data_format(DataFormat.PARQUET)  
+        sc.prepare_for_processing()
+        sc.processing_data("rdd")
+        sc.write_results("rdd")
 
     # print("Start Query with SparkSQL")
     # for i in range(1, 4):

@@ -45,4 +45,12 @@ curl -k -X PUT https://localhost:8443/nifi-api/flow/process-groups/e7c1e05b-0180
            "state": "STOPPED"
          }' > /dev/null 2>&1
 
+echo "Start Grafana..."
+
+docker exec -it grafana grafana-cli plugins install redis-datasource > /dev/null 2>&1
+
+docker restart grafana > /dev/null 2>&1
+
+sleep 2
+
 echo "SetUp with $NUM_WORKERS workers Done"
