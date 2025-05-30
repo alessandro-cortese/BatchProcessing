@@ -2,13 +2,12 @@ import time
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, hour, avg, percentile_approx
 from model.model import QueryResult, SparkActionResult, NUM_RUNS_PER_QUERY as runs
-from engineering.execution_logger import track_query
 from pyspark.sql import SparkSession
+from engineering.execution_logger import QueryExecutionLogger
 
 HEADER = ["Country", "Metric", "Min", "P25", "P50", "P75", "Max"]
 SORT_LIST = ["Country", "Metric"]
 
-@track_query("query3", "Dataframe")
 def exec_query3_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
     """
     Aggregates the 24-hour daily data for each country, calculates the hourly average and then the percentiles of 
@@ -67,6 +66,13 @@ def exec_query3_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
 
     print("Query execution finished.")
     print(f"Query 3 average time over {runs} runs: {avg_time:.2f} seconds")
+
+    QueryExecutionLogger().log(
+        query_name="query3",
+        query_type="Dataframe",
+        execution_time=avg_time,
+        spark_conf={"spark.executor.instances": QueryExecutionLogger().get_num_executor() or "unknown"}
+    )
 
     return QueryResult(name="query3", results=[
         SparkActionResult(

@@ -46,27 +46,8 @@ class QueryExecutionLogger:
             writer = csv.DictWriter(f, fieldnames=keys)
             writer.writeheader()
             writer.writerows(self.records)
-        
+
         print(f"Exported query performance log to {path}")
 
-    
     def clear(self):
         self.records.clear()
-
-def track_query(query_name: str, query_type: str):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            start = time.time()
-            result = func(*args, **kwargs)
-            end = time.time()
-
-            QueryExecutionLogger().log(
-                query_name=query_name,
-                query_type=query_type,
-                execution_time=end - start,
-                spark_conf={"spark.executor.instances": QueryExecutionLogger().get_num_executor() or "unknown"}
-            )
-            return result
-        return wrapper
-    return decorator
-

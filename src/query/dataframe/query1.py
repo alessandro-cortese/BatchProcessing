@@ -3,10 +3,10 @@ from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, year, min, max, avg
 from model.model import QueryResult, SparkActionResult
 from pyspark.rdd import RDD  
-from engineering.execution_logger import track_query
 from pyspark.sql import SparkSession
 from datetime import datetime
 from model.model import NUM_RUNS_PER_QUERY as runs
+from engineering.execution_logger import QueryExecutionLogger
 
 HEADER = [
     "Country", "Year",
@@ -17,7 +17,6 @@ HEADER = [
 
 SORT_LIST = ["Country", "Year"]
 
-@track_query("query1", "Dataframe")
 def exec_query1_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
     """
     Executes Query 1 using only the DataFrame API.
@@ -60,6 +59,13 @@ def exec_query1_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
 
     avg_time = sum(execution_times) / runs
     print(f"\nAverage execution time over {runs} runs: {avg_time:.2f} seconds")
+
+    QueryExecutionLogger().log(
+        query_name="query1",
+        query_type="Dataframe",
+        execution_time=avg_time,
+        spark_conf={"spark.executor.instances": QueryExecutionLogger().get_num_executor() or "unknown"}
+    )
 
     # Wrap result in QueryResult from the last run 
     res = QueryResult(name="query1", results=[

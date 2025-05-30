@@ -5,8 +5,9 @@ from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator
 from pyspark.ml.feature import VectorAssembler
 from model.model import QueryResult, SparkActionResult, NUM_RUNS_PER_QUERY as runs
-from engineering.execution_logger import track_query
 from pyspark.sql import SparkSession
+from engineering.execution_logger import QueryExecutionLogger
+
 
 HEADER = ["Country", "Cluster"]
 SORT_LIST = ["Cluster", "Country"]
@@ -75,6 +76,13 @@ def _run_query4_clustering(df: DataFrame, spark: SparkSession, use_parallel: boo
 
     avg_time = sum(execution_times) / runs
 
+    QueryExecutionLogger().log(
+        query_name="query4",
+        query_type="Dataframe",
+        execution_time=avg_time,
+        spark_conf={"spark.executor.instances": QueryExecutionLogger().get_num_executor() or "unknown"}
+    )
+
     return QueryResult(name="query4", results=[
         SparkActionResult(
             name="query4",
@@ -85,13 +93,11 @@ def _run_query4_clustering(df: DataFrame, spark: SparkSession, use_parallel: boo
         )
     ])
 
-@track_query("query4", "Dataframe")
 def exec_query4(df: DataFrame, spark: SparkSession) -> QueryResult:
     print("Starting to evaluate query 4 (Standard Clustering)...")
     return _run_query4_clustering(df, spark, use_parallel=False)
 
 
-@track_query("query4", "Dataframe")
 def exec_query4_parallel(df: DataFrame, spark: SparkSession) -> QueryResult:
     print("Starting to evaluate query 4 (Parallel Clustering)...")
     return _run_query4_clustering(df, spark, use_parallel=True)

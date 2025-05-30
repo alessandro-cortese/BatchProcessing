@@ -1,8 +1,8 @@
 from pyspark.rdd import RDD
 from pyspark.sql import SparkSession, Row
 from model.model import QueryResult, SparkActionResult, NUM_RUNS_PER_QUERY as runs
-from engineering.execution_logger import track_query
 import time
+from engineering.execution_logger import QueryExecutionLogger
 
 HEADER = [
     "Country", "Year",
@@ -12,7 +12,6 @@ HEADER = [
 
 SORT_LIST = ["Country", "Year"]
 
-@track_query("query1", "RDD")
 def exec_query1_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
     """
     Executes Query 1 using RDD for computation, then converts to DataFrame for output.
@@ -90,6 +89,13 @@ def exec_query1_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
 
     print("Query execution finished.")
     print(f"Query 1 average time over {runs} runs: {avg_time:.2f} seconds")
+
+    QueryExecutionLogger().log(
+        query_name="query1",
+        query_type="RDD",
+        execution_time=avg_time,
+        spark_conf={"spark.executor.instances": QueryExecutionLogger().get_num_executor() or "unknown"}
+    )
 
     return QueryResult(name="query1", results=[
         SparkActionResult(
