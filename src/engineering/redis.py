@@ -4,6 +4,8 @@ import json
 import os
 from redis import Redis
 from pyspark.sql import DataFrame
+from datetime import datetime
+
 
 class RedisAPI:
     _instance = None
@@ -32,18 +34,29 @@ class RedisAPI:
             )
         return RedisAPI._instance
 
+    from datetime import datetime
+
     def put_result(self, query: str, df: DataFrame) -> bool:
-        """
-        Salva ogni riga del DataFrame come una Hash in Redis, compatibile con il plugin Redis di Grafana.
-        """
         try:
             rows = df.collect()
+            print(f"Number of rows to store: {len(rows)}")
+
             for i, row in enumerate(rows):
                 row_dict = row.asDict()
+
+                year = int(row_dict["Year"])
+                timestamp = int(datetime(year, 1, 1).timestamp() * 1000)
+                row_dict["@timestamp"] = timestamp
+
+                print(f"Saving row {i} to Redis with key {query}:{i} and data {row_dict}")
+
                 key = f"{query}:{i}"
                 self._redis_connection.hset(name=key, mapping=row_dict)
+
             print(f"{len(rows)} rows written to Redis under prefix '{query}:*'")
             return True
         except Exception as e:
             print(f"Error writing to Redis: {e}")
             return False
+
+

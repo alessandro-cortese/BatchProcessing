@@ -1,0 +1,196 @@
+{
+  "id": null,
+  "uid": "q3-rdd-hourly",
+  "title": "Q3 \u2013 Distribuzione Oraria (IT vs SE) \u2013 Fix Hour Axis",
+  "tags": [
+    "RDD",
+    "Q3",
+    "hourly"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Carbon Intensity per Ora \u2013 Percentili",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "Min_IT",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"Min\" and\n    r.Metric == \"carbon-intensity\" and\n    r.Country == \"IT\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "Min_SE",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"Min\" and\n    r.Metric == \"carbon-intensity\" and\n    r.Country == \"SE\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "P25_IT",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"P25\" and\n    r.Metric == \"carbon-intensity\" and\n    r.Country == \"IT\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "P25_SE",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"P25\" and\n    r.Metric == \"carbon-intensity\" and\n    r.Country == \"SE\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "P50_IT",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"P50\" and\n    r.Metric == \"carbon-intensity\" and\n    r.Country == \"IT\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "P50_SE",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"P50\" and\n    r.Metric == \"carbon-intensity\" and\n    r.Country == \"SE\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "P75_IT",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"P75\" and\n    r.Metric == \"carbon-intensity\" and\n    r.Country == \"IT\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "P75_SE",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"P75\" and\n    r.Metric == \"carbon-intensity\" and\n    r.Country == \"SE\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "Max_IT",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"Max\" and\n    r.Metric == \"carbon-intensity\" and\n    r.Country == \"IT\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "Max_SE",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"Max\" and\n    r.Metric == \"carbon-intensity\" and\n    r.Country == \"SE\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        }
+      ],
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        },
+        "xAxis": {
+          "show": true,
+          "mode": "series",
+          "name": "Hour"
+        },
+        "yAxis": {
+          "show": true,
+          "label": "carbon-intensity"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Carbon-Free Energy per Ora \u2013 Percentili",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "Min_IT",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"Min\" and\n    r.Metric == \"cfe\" and\n    r.Country == \"IT\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "Min_SE",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"Min\" and\n    r.Metric == \"cfe\" and\n    r.Country == \"SE\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "P25_IT",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"P25\" and\n    r.Metric == \"cfe\" and\n    r.Country == \"IT\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "P25_SE",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"P25\" and\n    r.Metric == \"cfe\" and\n    r.Country == \"SE\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "P50_IT",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"P50\" and\n    r.Metric == \"cfe\" and\n    r.Country == \"IT\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "P50_SE",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"P50\" and\n    r.Metric == \"cfe\" and\n    r.Country == \"SE\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "P75_IT",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"P75\" and\n    r.Metric == \"cfe\" and\n    r.Country == \"IT\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "P75_SE",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"P75\" and\n    r.Metric == \"cfe\" and\n    r.Country == \"SE\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "Max_IT",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"Max\" and\n    r.Metric == \"cfe\" and\n    r.Country == \"IT\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        },
+        {
+          "refId": "Max_SE",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query3_dataframe\" and\n    r._field == \"Max\" and\n    r.Metric == \"cfe\" and\n    r.Country == \"SE\")\n  |> group(columns: [\"_field\", \"Country\"])\n"
+        }
+      ],
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        },
+        "xAxis": {
+          "show": true,
+          "mode": "series",
+          "name": "Hour"
+        },
+        "yAxis": {
+          "show": true,
+          "label": "cfe"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "id": null,
+  "uid": "q2-rdd-fixed",
+  "title": "Q2 \u2013 Andamento Mensile IT (RDD) \u2013 Fixed Fields",
+  "tags": [
+    "RDD",
+    "Q2",
+    "fixed"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Carbon Intensity Mensile \u2013 IT",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query2_dataframe\" and\n    r._field == \"Carbon_Intensity\")\n"
+        }
+      ],
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "xAxis": {
+          "show": true,
+          "mode": "time",
+          "name": "Time"
+        },
+        "yAxis": {
+          "show": true,
+          "label": "Carbon_Intensity"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Carbon-Free Energy Mensile \u2013 IT",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query2_dataframe\" and\n    r._field == \"CFE\")\n"
+        }
+      ],
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "xAxis": {
+          "show": true,
+          "mode": "time",
+          "name": "Time"
+        },
+        "yAxis": {
+          "show": true,
+          "label": "CFE"
+        }
+      }
+    }
+  ]
+}

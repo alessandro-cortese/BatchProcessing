@@ -16,12 +16,12 @@ def exec_query3_sql(df: DataFrame, spark: SparkSession) -> QueryResult:
             WITH hourly_avg AS (
                 SELECT
                     Country,
-                    HOUR(Datetime_UTC) AS Hour,
+                    Hour,
                     AVG(Carbon_intensity_gCO_eq_kWh) AS Carbon_Intensity,
                     AVG(Carbon_free_energy_percentage__CFE) AS CFE
                 FROM ElectricityData
                 WHERE Country IN ('Italy', 'Sweden')
-                GROUP BY Country, HOUR(Datetime_UTC)
+                GROUP BY Country, Hour
             ),
 
             percentiles_ci AS (

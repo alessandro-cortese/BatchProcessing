@@ -1,0 +1,146 @@
+{
+  "id": null,
+  "uid": "q1-rdd-dashboard",
+  "title": "Q1 \u2013 Andamento Annuale (RDD)",
+  "tags": [
+    "progetto",
+    "RDD",
+    "Q1"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Carbon Intensity Media \u2013 IT vs SE",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "none",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "displayName": "Carbon Intensity (gCO2eq/kWh)"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query1_dataframe\" and\n    r._field == \"Avg_Carbon_Intensity\" and\n    (r.Country == \"Italy\" or r.Country == \"Sweden\")\n  )\n",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "mean"
+          ],
+          "fields": ""
+        },
+        "timeRegions": [],
+        "xAxis": {
+          "show": true,
+          "mode": "time",
+          "name": "Year"
+        },
+        "yAxis": {
+          "show": true,
+          "label": "Carbon Intensity (gCO2eq/kWh)"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Carbon Free Energy Media \u2013 IT vs SE",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "none",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "displayName": "Carbon-Free Energy (%)"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "query": "\nfrom(bucket: \"sparkresults\")\n  |> range(start: 2021-01-01T00:00:00Z)\n  |> filter(fn: (r) =>\n    r._measurement == \"query1_dataframe\" and\n    r._field == \"Avg_CFE\" and\n    (r.Country == \"Italy\" or r.Country == \"Sweden\")\n  )\n",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "mean"
+          ],
+          "fields": ""
+        },
+        "timeRegions": [],
+        "xAxis": {
+          "show": true,
+          "mode": "time",
+          "name": "Year"
+        },
+        "yAxis": {
+          "show": true,
+          "label": "Carbon-Free Energy (%)"
+        }
+      }
+    }
+  ]
+}

@@ -15,13 +15,13 @@ def exec_query2_sql(df: DataFrame, spark: SparkSession) -> QueryResult:
         result_df = spark_api.session.sql("""
             WITH aggregated AS (
                 SELECT
-                    EXTRACT(YEAR FROM Datetime_UTC) AS Year,
-                    EXTRACT(MONTH FROM Datetime_UTC) AS Month,
+                    Year,
+                    Month,
                     AVG(Carbon_intensity_gCO_eq_kWh) AS Carbon_Intensity,
                     AVG(Carbon_free_energy_percentage__CFE) AS CFE
                 FROM ElectricityData
                 WHERE Country = 'Italy'
-                GROUP BY EXTRACT(YEAR FROM Datetime_UTC), EXTRACT(MONTH FROM Datetime_UTC)
+                GROUP BY Year, Month
             ),
             top_ci_desc AS (
                 SELECT * FROM aggregated ORDER BY Carbon_Intensity DESC LIMIT 5

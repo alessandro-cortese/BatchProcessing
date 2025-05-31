@@ -7,3 +7,4 @@ python-dotenv===1.0.1
 redis===5.0.4
 redis-py-cluster
 matplotlib===3.9.0
+influxdb-client==1.41.0

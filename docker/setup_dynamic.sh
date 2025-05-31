@@ -49,6 +49,8 @@ echo "Start Grafana..."
 
 docker exec -it grafana grafana-cli plugins install redis-datasource > /dev/null 2>&1
 
+docker exec -it grafana grafana-cli plugins install yesoreyeram-infinity-datasource > /dev/null 2>&1
+
 docker restart grafana > /dev/null 2>&1
 
 sleep 2

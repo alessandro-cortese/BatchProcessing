@@ -99,16 +99,24 @@ services:
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_CORES=1
     tty: true
-      
-  ## REDIS
-  redis:
-    container_name: redis
-    image: redis
+
+  ## InfluxDB    
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    ports:
+      - "8086:8086"
     networks:
       - batch_processing_network
-    ports:
-      - "6379:6379"
-    tty: true
+    volumes:
+      - influxdb-storage:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUX_DB_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUX_DB_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=BatchProcessing
+      - DOCKER_INFLUXDB_INIT_BUCKET=sparkresults
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUX_DB_TOKEN}
   
   ## GRAFANA
   grafana:
@@ -126,8 +134,20 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USERNAME}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_RENDERING_SERVER_URL=http://grafana-renderer:8081/render
+      - GF_RENDERING_CALLBACK_URL=http://grafana:3000/
+      - GF_LOG_FILTERS=rendering:debug
     depends_on:
-      - redis
+      - renderer
+
+  renderer:
+    image: grafana/grafana-image-renderer:latest
+    container_name: grafana-renderer
+    ports:
+      - "8081:8081"
+    networks:
+      - batch_processing_network
 
 volumes:
   grafana-storage:
+  influxdb-storage:

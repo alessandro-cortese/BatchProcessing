@@ -3,6 +3,7 @@ from model.model import DataFormat, SparkError, QueryResult
 from engineering.files import write_result_as_csv, write_evaluation, results_path_from_filename
 from api.spark_api import SparkAPI
 from engineering.redis import RedisAPI
+from engineering.influx_api import InfluxAPI
 from pyspark.rdd import RDD
 from pyspark.sql.functions import year, month, col, dayofmonth, hour
 from controller.query_function import QUERY_FUNCTIONS
@@ -115,7 +116,6 @@ class SparkController:
     def write_results(self, type: str) -> SparkController:
         """Write the results."""
         api = SparkAPI.get()
-        redis = RedisAPI.get()
         for res in self._results:
             for output_res in res:
                 filename = output_res.name + "_" + type + ".csv"
@@ -130,8 +130,8 @@ class SparkController:
                 # Write results to HDFS
                 print("Writing results to HDFS..")
                 api.write_results_to_hdfs(df, filename)
-                redis.put_result(query=filename, df=df)
-
+                print("Writing results to InfluxDB..")
+                InfluxAPI().put_result(measurement=filename.replace(".csv", ""), df=df)
             if self._write_evaluation:
                 print("Writing evaluation..")
                 write_evaluation(res.name, self._data_format.name.lower(), res.total_exec_time)

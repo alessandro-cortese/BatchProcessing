@@ -9,6 +9,9 @@ for n in {2..8}; do
   echo "Running test with $n workers"
   echo "=============================="
   ./setup_dynamic.sh $n
+  docker build --no-cache ./client -t spark-client
+  docker run -t -i -p 4040:4040 --network batch_processing_network --name=spark-app --volume ./src:/home/spark/src --volume ./results:/home/spark/results --volume ./performance:/performance --workdir /home/spark 
+  docker start spark-app
   docker exec -it spark-app python3 src/main.py --workers $n
   echo "Test with $n workers done."
   ./stop_spark_client.sh

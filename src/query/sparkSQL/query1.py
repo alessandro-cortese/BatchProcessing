@@ -15,7 +15,7 @@ def exec_query1_sql(df: DataFrame, spark: SparkSession) -> QueryResult:
         result_df = spark_api.session.sql("""
             SELECT
                 Country,
-                EXTRACT(YEAR FROM Datetime_UTC) AS Year,
+                Year,
                 AVG(Carbon_intensity_gCO_eq_kWh) AS Avg_Carbon_Intensity,
                 MIN(Carbon_intensity_gCO_eq_kWh) AS Min_Carbon_Intensity,
                 MAX(Carbon_intensity_gCO_eq_kWh) AS Max_Carbon_Intensity,
@@ -28,7 +28,7 @@ def exec_query1_sql(df: DataFrame, spark: SparkSession) -> QueryResult:
                 Country IN ('Italy', 'Sweden')
             GROUP BY
                 Country,
-                EXTRACT(YEAR FROM Datetime_UTC)
+                Year
             ORDER BY
                 Country,
                 Year;
