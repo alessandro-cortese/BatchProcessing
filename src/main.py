@@ -73,14 +73,14 @@ def main():
     # QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_RDD_workers_{DataFormat.PARQUET.name}.csv")
 
     # SQL: query 1 to 4, with Parquet
-    print("Start Query with SparkSQL")
-    for i in range(1, 4):
-        sc = SparkController(i, write_evaluation=False, local_write=True)
-        sc.set_data_format(DataFormat.PARQUET)  
-        sc.prepare_for_processing()
-        sc.processing_data("sparkSQL")
-        sc.write_results("sparkSQL")
-    QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_sparkSQL_workers_{DataFormat.PARQUET.name}.csv")
+    # print("Start Query with SparkSQL")
+    # for i in range(1, 4):
+    #     sc = SparkController(i, write_evaluation=False, local_write=True)
+    #     sc.set_data_format(DataFormat.PARQUET)  
+    #     sc.prepare_for_processing()
+    #     sc.processing_data("sparkSQL")
+    #     sc.write_results("sparkSQL")
+    # QueryExecutionLogger().export_csv(f"query_exec_log_{args.workers}_sparkSQL_workers_{DataFormat.PARQUET.name}.csv")
 
     # SQL: query 1 to 4, with CSV
 

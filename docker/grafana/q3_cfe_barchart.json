@@ -1,0 +1,78 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "q3-cfe-barchart",
+    "title": "Q3 \u2013 CFE Statistics \u2013 Bar Chart",
+    "tags": [
+      "Q3",
+      "cfe",
+      "barchart"
+    ],
+    "timezone": "browser",
+    "schemaVersion": 36,
+    "version": 1,
+    "refresh": "5s",
+    "panels": [
+      {
+        "type": "barchart",
+        "title": "CFE Statistics \u2013 Bar Chart",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "influxdb"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "none",
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "targets": [
+          {
+            "refId": "A",
+            "query": "from(bucket: \"sparkresults\")\n  |> range(start: -5y)\n  |> filter(fn: (r) => \n    r._measurement == \"query3_dataframe\" and\n    r.Metric == \"cfe\"\n  )\n  |> pivot(rowKey:[\"_time\"], columnKey:[\"_field\"], valueColumn: \"_value\")\n  |> keep(columns: [\"_time\", \"Country\", \"Min\", \"P25\", \"P50\", \"P75\", \"Max\"])"
+          }
+        ],
+        "gridPos": {
+          "h": 10,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "options": {
+          "orientation": "auto",
+          "xTickLabelRotation": 0,
+          "xTickLabelSpacing": 0,
+          "showValue": "auto",
+          "stacking": "none",
+          "groupWidth": 0.7,
+          "barWidth": 0.97,
+          "barRadius": 0,
+          "fullHighlight": false,
+          "tooltip": {
+            "mode": "single",
+            "sort": "none",
+            "hideZeros": false
+          },
+          "legend": {
+            "showLegend": true,
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": []
+          }
+        },
+        "pluginVersion": "12.0.1"
+      }
+    ]
+  },
+  "overwrite": true
+}

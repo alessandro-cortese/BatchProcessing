@@ -1,0 +1,72 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Carbon Intensity & CFE Comparison",
+    "tags": [
+      "carbon",
+      "cfe",
+      "influxdb"
+    ],
+    "timezone": "browser",
+    "schemaVersion": 30,
+    "version": 1,
+    "refresh": "5s",
+    "panels": [
+      {
+        "type": "barchart",
+        "title": "Carbon Intensity Statistics",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "from(bucket: \"sparkresults\")\n  |> range(start: -5y)\n  |> filter(fn: (r) => \n    r._measurement == \"query3_dataframe\" and\n    r.Metric == \"carbon-intensity\"\n  )\n  |> pivot(rowKey:[\"_time\"], columnKey:[\"_field\"], valueColumn: \"_value\")\n  |> keep(columns: [\"_time\", \"Country\", \"Min\", \"P25\", \"P50\", \"P75\", \"Max\"])",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 10,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": []
+        },
+        "options": {
+          "showHeader": true
+        }
+      },
+      {
+        "type": "barchart",
+        "title": "CFE Statistics",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "from(bucket: \"sparkresults\")\n  |> range(start: -5y)\n  |> filter(fn: (r) => \n    r._measurement == \"query3_dataframe\" and\n    r.Metric == \"cfe\"\n  )\n  |> pivot(rowKey:[\"_time\"], columnKey:[\"_field\"], valueColumn: \"_value\")\n  |> keep(columns: [\"_time\", \"Country\", \"Min\", \"P25\", \"P50\", \"P75\", \"Max\"])",
+            "refId": "B"
+          }
+        ],
+        "gridPos": {
+          "h": 10,
+          "w": 24,
+          "x": 0,
+          "y": 10
+        },
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": []
+        },
+        "options": {
+          "showHeader": true
+        }
+      }
+    ]
+  },
+  "overwrite": true
+}
