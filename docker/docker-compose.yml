@@ -50,29 +50,29 @@ services:
       - batch_processing_network
     tty: true
     depends_on:
-      - slave2
-
-  slave2:
-    container_name: hdfs-worker2
-    image: matnar/hadoop
-    ports:
-      - "9863:9864"
-    networks:
-      - batch_processing_network
-    tty: true
-    depends_on:
-      - slave3
-
-  slave3:
-    container_name: hdfs-worker3
-    image: matnar/hadoop
-    ports:
-      - "9862:9864"
-    networks:
-      - batch_processing_network
-    tty: true
-    depends_on:
       - spark-master
+
+  # slave2:
+  #   container_name: hdfs-worker2
+  #   image: matnar/hadoop
+  #   ports:
+  #     - "9863:9864"
+  #   networks:
+  #     - batch_processing_network
+  #   tty: true
+  #   depends_on:
+  #     - spark-master
+
+  # slave3:
+  #   container_name: hdfs-worker3
+  #   image: matnar/hadoop
+  #   ports:
+  #     - "9862:9864"
+  #   networks:
+  #     - batch_processing_network
+  #   tty: true
+  #   depends_on:
+  #     - spark-master
 
   ## SPARK
   spark-master:

@@ -1,0 +1,4 @@
+query_name,query_type,execution_time_sec,num_executors
+query1,SQL,0.211,5
+query2,SQL,0.194,5
+query3,SQL,0.356,5

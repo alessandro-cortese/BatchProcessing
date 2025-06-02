@@ -1,0 +1,4 @@
+query_name,query_type,execution_time_sec,num_executors
+query1,RDD,3.885,6
+query2,RDD,3.795,6
+query3,RDD,3.91,6

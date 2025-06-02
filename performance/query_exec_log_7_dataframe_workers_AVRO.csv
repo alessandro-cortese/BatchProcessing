@@ -1,0 +1,5 @@
+query_name,query_type,execution_time_sec,num_executors
+query1,Dataframe,0.244,7
+query2,DataFrame,0.18,7
+query3,Dataframe,0.591,7
+query4,Dataframe,12.778,7
