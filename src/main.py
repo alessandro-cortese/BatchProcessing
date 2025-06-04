@@ -5,9 +5,8 @@ from engineering.execution_logger import QueryExecutionLogger
 
 def run_query_for_format(file_format, workers):
     """
-    Esegui le query per un dato formato di file (Parquet, CSV, Avro) per tutti i tipi di dati.
+    Run queries for a given file format (Parquet, CSV, Avro) for all data types.
     """
-    # Formati di dati espliciti
     data_types = ["dataframe", "rdd", "sparkSQL"]
     
     for data_type in data_types:
