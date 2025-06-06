@@ -16,9 +16,9 @@ class SparkAPI:
         self._fs = fs
 
     @staticmethod
-    def get() -> SparkAPI:
+    def get(enable_optimizations: bool = True) -> SparkAPI:
         if SparkAPI._instance is None:
-            SparkAPI._instance = SparkBuilder().build()
+            SparkAPI._instance = SparkBuilder().build(enable_optimizations=enable_optimizations)
         return SparkAPI._instance
 
     @property
@@ -132,17 +132,21 @@ class SparkAPI:
 
 
 class SparkBuilder:
-    def build(self) -> SparkAPI:
+    def build(self, enable_optimizations: bool = True) -> SparkAPI:
         config = Config()
         master_url = f"spark://{config.spark_master}:{config.spark_port}"
 
-        session = SparkSession.builder \
+        builder = SparkSession.builder \
             .appName(config.spark_app_name) \
             .master(master_url) \
-            .config("spark.jars.packages", "org.apache.spark:spark-avro_2.12:3.5.1") \
-            .config("spark.sql.codegen.wholeStage", "false") \
-            .config("spark.sql.adaptive.enabled", "false") \
-            .getOrCreate()
+            .config("spark.jars.packages", "org.apache.spark:spark-avro_2.12:3.5.1")
+
+        if not enable_optimizations:
+            builder = builder \
+                .config("spark.sql.codegen.wholeStage", "false") \
+                .config("spark.sql.adaptive.enabled", "false")
+
+        session = builder.getOrCreate()
 
         sc = session.sparkContext
         hadoop_conf = sc._jsc.hadoopConfiguration()

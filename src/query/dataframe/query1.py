@@ -32,9 +32,9 @@ def exec_query1_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
         print(f"\nRun {i+1}/{runs}")
 
         start_time = time.time()
-        
+
         # Filter for Italy and Sweden
-        temp_df = temp_df.filter(col("Country").isin("Italy", "Sweden"))
+        temp_df = df.filter(col("Country").isin("Italy", "Sweden"))
 
         # Group by Country and Year, then compute aggregates
         result_df = temp_df.groupBy("Country", "Year").agg(

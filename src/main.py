@@ -8,7 +8,7 @@ def run_query_for_format(file_format, workers):
     """
     Run queries for a given file format (Parquet, CSV, Avro) for all data types.
     """
-    data_types = ["dataframe", "rdd", "sparkSQL"]
+    data_types = ["dataframe", "rdd", "sql"]
     
     for data_type in data_types:
         
@@ -29,10 +29,15 @@ def run_query_for_format(file_format, workers):
         QueryExecutionLogger().export_csv(f"query_exec_log_{workers}_{data_type}_workers_{file_format.name}.csv")
         QueryExecutionLogger().clear()
 
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--workers", type=int, help="Expected number of Spark workers", required=True)
+    parser.add_argument("--workers", type=int, required=True, help="Expected number of Spark workers")
+    parser.add_argument("--opt", type=str, choices=["on", "off"], default="on", help="Enable or disable Spark optimizations")
     args = parser.parse_args()
+
+    enable_opt = args.opt == "on"
+
     QueryExecutionLogger().clear()
     QueryExecutionLogger().set_num_executors(args.workers)
 
@@ -40,17 +45,16 @@ def main():
     print("║  🔌 Energy & Emissions Analysis with Apache Spark          ║")
     print("║  ------------------------------------------------------    ║")
     print(f"║  Benchmark: Varying Number of Spark Workers {args.workers}              ║")
+    print(f"║  Spark optimizations enabled: {enable_opt}                         ║")
     print("╚════════════════════════════════════════════════════════════╝")
 
-    print(f"Expected Spark cluster size: {args.workers} workers")
-
-    # Esegui le query per ogni formato di file
     file_formats = [DataFormat.PARQUET, DataFormat.CSV, DataFormat.AVRO]
     for file_format in file_formats:
         run_query_for_format(file_format, args.workers)
 
-    SparkAPI.get().close()
+    SparkAPI.get(enable_optimizations=enable_opt).close()
     print("SparkController finished")
+
 
 if __name__ == "__main__":
     main()
