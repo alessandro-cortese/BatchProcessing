@@ -50,7 +50,7 @@ def exec_query2_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
         print(f"Run {i+1} execution time: {exec_time:.2f} seconds")
 
     # Cache the last averaged result to use for top-k computation
-    averaged.cache()
+    # averaged.cache()
 
     # Top-5 metrics
     top5_ci_desc = averaged.sortBy(lambda x: (-x[2], x[0], x[1])).take(5)

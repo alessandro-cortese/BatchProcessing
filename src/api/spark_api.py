@@ -140,6 +140,8 @@ class SparkBuilder:
             .appName(config.spark_app_name) \
             .master(master_url) \
             .config("spark.jars.packages", "org.apache.spark:spark-avro_2.12:3.5.1") \
+            .config("spark.sql.codegen.wholeStage", "false") \
+            .config("spark.sql.adaptive.enabled", "false") \
             .getOrCreate()
 
         sc = session.sparkContext
