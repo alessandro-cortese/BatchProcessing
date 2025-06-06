@@ -2,6 +2,7 @@ import argparse
 from controller.spark import SparkController
 from model.model import DataFormat
 from engineering.execution_logger import QueryExecutionLogger
+from api.spark_api import SparkAPI
 
 def run_query_for_format(file_format, workers):
     """
@@ -48,6 +49,7 @@ def main():
     for file_format in file_formats:
         run_query_for_format(file_format, args.workers)
 
+    SparkAPI.get().close()
     print("SparkController finished")
 
 if __name__ == "__main__":

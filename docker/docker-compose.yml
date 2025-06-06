@@ -3,6 +3,10 @@ networks:
     driver: bridge
     name: batch_processing_network
 
+volumes:
+  grafana-storage:
+  influxdb-storage:
+
 services:
   
   ## NIFI
@@ -147,7 +151,3 @@ services:
       - "8081:8081"
     networks:
       - batch_processing_network
-
-volumes:
-  grafana-storage:
-  influxdb-storage:

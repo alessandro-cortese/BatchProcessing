@@ -9,7 +9,7 @@ class DataFormat(Enum):
     CSV = "csv"
     AVRO = "avro"
 
-NUM_RUNS_PER_QUERY = 20  # fixed number of repetitions for each query
+NUM_RUNS_PER_QUERY = 1  # fixed number of repetitions for each query
 
 class SparkActionResult:
     """Result of a Spark job"""
@@ -30,7 +30,7 @@ class SparkActionResult:
     def header(self) -> list[str]:
         return self._header
 
-    @property
+    @property   
     def sort_list(self) -> list:
         return self._sort_list
 
