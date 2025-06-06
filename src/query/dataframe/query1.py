@@ -32,10 +32,7 @@ def exec_query1_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
         print(f"\nRun {i+1}/{runs}")
 
         start_time = time.time()
-
-        # Add Year column
-        temp_df = df.withColumn("Year", year(col("Datetime_UTC")))
-
+        
         # Filter for Italy and Sweden
         temp_df = temp_df.filter(col("Country").isin("Italy", "Sweden"))
 
