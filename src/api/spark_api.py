@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 from engineering.config import Config
-from model.model import DataFormat, SparkActionResult
+from model.model import DataFormat, Result
 from pyspark import SparkContext
 from pyspark.sql import SparkSession, DataFrame
 from enum import Enum
@@ -116,7 +116,7 @@ class SparkAPI:
 
         print("Conversion completed.")
 
-    def df_from_action_result(self, action_res: SparkActionResult) -> DataFrame:
+    def df_from_action_result(self, action_res: Result) -> DataFrame:
         df = SparkAPI.get().session.createDataFrame(
             action_res.result, schema=action_res.header)
 

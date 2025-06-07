@@ -1,7 +1,7 @@
 from pyspark.rdd import RDD
 from pyspark.sql import Row
 from pyspark.sql import SparkSession
-from model.model import QueryResult, SparkActionResult, NUM_RUNS_PER_QUERY as runs
+from model.model import QueryResult, Result, NUM_RUNS_PER_QUERY as runs
 import time
 from engineering.execution_logger import QueryExecutionLogger
 
@@ -36,19 +36,17 @@ def exec_query2_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
 
         averaged.foreach(lambda _: None)
         
-    collected = averaged.collect()
+        collected = averaged.collect()
+        top5_ci_desc = sorted(collected, key=lambda x: (-x[2], x[0], x[1]))[:5]
+        top5_ci_asc  = sorted(collected, key=lambda x: ( x[2], x[0], x[1]))[:5]
+        top5_cfe_desc = sorted(collected, key=lambda x: (-x[3], x[0], x[1]))[:5]
+        top5_cfe_asc  = sorted(collected, key=lambda x: ( x[3], x[0], x[1]))[:5]
 
-    top5_ci_desc = sorted(collected, key=lambda x: (-x[2], x[0], x[1]))[:5]
-    top5_ci_asc  = sorted(collected, key=lambda x: ( x[2], x[0], x[1]))[:5]
-    top5_cfe_desc = sorted(collected, key=lambda x: (-x[3], x[0], x[1]))[:5]
-    top5_cfe_asc  = sorted(collected, key=lambda x: ( x[3], x[0], x[1]))[:5]
-
-    final_results = top5_ci_desc + top5_ci_asc + top5_cfe_desc + top5_cfe_asc
-
-    end_time = time.time()
-    exec_time = end_time - start_time
-    execution_times.append(exec_time)
-    print(f"Run {i+1} execution time: {exec_time:.2f} seconds")
+        final_results = top5_ci_desc + top5_ci_asc + top5_cfe_desc + top5_cfe_asc
+        end_time = time.time()
+        exec_time = end_time - start_time
+        execution_times.append(exec_time)
+        print(f"Run {i+1} execution time: {exec_time:.2f} seconds")
 
     result_df = spark.sparkContext.parallelize(final_results).map(lambda t: Row(
         Year=t[0],
@@ -70,7 +68,7 @@ def exec_query2_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
     )
 
     return QueryResult(name="query2", results=[
-        SparkActionResult(
+        Result(
             name="query2",
             header=HEADER,
             sort_list=SORT_LIST,

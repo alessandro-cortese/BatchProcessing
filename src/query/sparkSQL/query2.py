@@ -1,7 +1,7 @@
 import time
 from pyspark.sql import DataFrame, SparkSession
 from api.spark_api import SparkAPI
-from model.model import SparkActionResult, QueryResult, NUM_RUNS_PER_QUERY as runs
+from model.model import Result, QueryResult, NUM_RUNS_PER_QUERY as runs
 from query.dataframe.query2 import HEADER
 from engineering.execution_logger import QueryExecutionLogger
 
@@ -66,7 +66,7 @@ def exec_query2_sql(df: DataFrame, spark: SparkSession) -> QueryResult:
     )
 
     return QueryResult(name="sql-query2", results=[
-        SparkActionResult(
+        Result(
             name="sql-query2",
             header=HEADER,
             sort_list=[],

@@ -1,6 +1,6 @@
 from pyspark.rdd import RDD
 from pyspark.sql import SparkSession, Row
-from model.model import QueryResult, SparkActionResult, NUM_RUNS_PER_QUERY as runs
+from model.model import QueryResult, Result, NUM_RUNS_PER_QUERY as runs
 import time
 from engineering.execution_logger import QueryExecutionLogger
 
@@ -65,7 +65,6 @@ def exec_query1_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
 
         # Trigger computation
         result_rdd.collect()
-
         end_time = time.time()
         exec_time = end_time - start_time
         execution_times.append(exec_time)
@@ -98,7 +97,7 @@ def exec_query1_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
     )
 
     return QueryResult(name="query1", results=[
-        SparkActionResult(
+        Result(
             name="query1",
             header=HEADER,
             sort_list=SORT_LIST,

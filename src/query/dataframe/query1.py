@@ -1,7 +1,7 @@
 import time
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, year, min, max, avg
-from model.model import QueryResult, SparkActionResult
+from model.model import QueryResult, Result
 from pyspark.rdd import RDD  
 from pyspark.sql import SparkSession
 from datetime import datetime
@@ -66,7 +66,7 @@ def exec_query1_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
 
     # Wrap result in QueryResult from the last run 
     res = QueryResult(name="query1", results=[
-        SparkActionResult(
+        Result(
             name="query1",
             header=HEADER,
             sort_list=SORT_LIST,

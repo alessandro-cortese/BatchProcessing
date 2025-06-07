@@ -11,7 +11,7 @@ class DataFormat(Enum):
 
 NUM_RUNS_PER_QUERY = 20  # fixed number of repetitions for each query
 
-class SparkActionResult:
+class Result:
     """Result of a Spark job"""
 
     def __init__(self, name: str, header: list[str], sort_list: list, result: list, execution_time: float, ascending_list: list | None = None):
@@ -46,10 +46,10 @@ class SparkActionResult:
     def exec_time(self) -> float:
         return self._execution_time
     
-class QueryResult(list[SparkActionResult]):
+class QueryResult(list[Result]):
     """List of Spark job results"""
 
-    def __init__(self, name: str, results: List[SparkActionResult]):
+    def __init__(self, name: str, results: List[Result]):
         super().__init__(results)
         self._name = name
 

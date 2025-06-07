@@ -1,7 +1,7 @@
 import time
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, hour, avg, percentile_approx
-from model.model import QueryResult, SparkActionResult, NUM_RUNS_PER_QUERY as runs
+from model.model import QueryResult, Result, NUM_RUNS_PER_QUERY as runs
 from pyspark.sql import SparkSession
 from engineering.execution_logger import QueryExecutionLogger
 
@@ -75,7 +75,7 @@ def exec_query3_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
     )
 
     return QueryResult(name="query3", results=[
-        SparkActionResult(
+        Result(
             name="query3",
             header=HEADER,
             sort_list=SORT_LIST,

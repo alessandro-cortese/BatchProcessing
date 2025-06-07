@@ -4,7 +4,7 @@ from pyspark.sql.functions import col, avg
 from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator
 from pyspark.ml.feature import VectorAssembler
-from model.model import QueryResult, SparkActionResult, NUM_RUNS_PER_QUERY as runs
+from model.model import QueryResult, Result, NUM_RUNS_PER_QUERY as runs
 from pyspark.sql import SparkSession
 from engineering.execution_logger import QueryExecutionLogger
 
@@ -84,7 +84,7 @@ def _run_query4_clustering(df: DataFrame, spark: SparkSession, use_parallel: boo
     )
 
     return QueryResult(name="query4", results=[
-        SparkActionResult(
+        Result(
             name="query4",
             header=HEADER,
             sort_list=SORT_LIST,

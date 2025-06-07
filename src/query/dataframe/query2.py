@@ -1,7 +1,7 @@
 import time
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, year, avg
-from model.model import QueryResult, SparkActionResult
+from model.model import QueryResult, Result
 from pyspark.sql import SparkSession
 from pyspark.rdd import RDD  
 from model.model import NUM_RUNS_PER_QUERY as runs
@@ -68,7 +68,7 @@ def exec_query2_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
     result_df.show()
 
     return QueryResult(name="query2", results=[
-        SparkActionResult(
+        Result(
             name="query2",
             header=HEADER,
             sort_list=[],

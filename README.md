@@ -79,11 +79,18 @@ The system is designed to run fully in Docker containers. Scripts to manage the 
   cd docker/
 ```
 ```bash
-├── setup.sh              # Builds and starts entire architecture
-├── start_spark_client.sh # Launch Spark client to run queries
-├── stop_architecture.sh  # Stops and removes all containers
-└── stop_spark_client.sh  # Stops and removes Spark client container
+├── ./setup_dynamic.sh <number of workers>    # Builds and starts entire architecture
+├── ./start_spark_client.sh                   # Launch Spark client to run queries
+├── ./stop_architecture.sh                    # Stops and removes all containers
+└── ./stop_spark_client.sh                    # Stops and removes Spark client container
 ```
+To run the Spark client and execute queries, use the src/main.py program along with the necessary parameters.
+
+   ```bash
+   python3 src/main.py --workers <number of workers> --opt <on/off>
+   ```
+
+The value of the Spark worker number parameter indicated in the spark-app container must be the same as the one used at setup time.
 
 ## 📚 References
 
