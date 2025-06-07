@@ -1,12 +1,11 @@
 import time
 from pyspark.rdd import RDD
 from pyspark.sql import SparkSession
-from model.model import QueryResult, Result, NUM_RUNS_PER_QUERY as runs
-from engineering.execution_logger import QueryExecutionLogger
+from model.model import QueryResult, NUM_RUNS_PER_QUERY as runs
+from engineering.query_utils import log_query, build_query_result, HEADER_Q3, SORT_LIST_Q3
+
 import numpy as np
 
-HEADER = ["Country", "Metric", "Min", "P25", "P50", "P75", "Max"]
-SORT_LIST = ["Country", "Metric"]
 
 def exec_query3_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
     """
@@ -70,20 +69,5 @@ def exec_query3_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
         print(f"Run {i+1} execution time: {exec_time:.2f} seconds")
 
     avg_time = sum(execution_times) / runs
-
-    QueryExecutionLogger().log(
-        query_name="query3",
-        query_type="RDD",
-        execution_time=avg_time,
-        spark_conf={"spark.executor.instances": QueryExecutionLogger().get_num_executor() or "unknown"}
-    )
-
-    return QueryResult(name="query3", results=[
-        Result(
-            name="query3",
-            header=HEADER,
-            sort_list=SORT_LIST,
-            result=result_rows,
-            execution_time=avg_time
-        )
-    ])
+    log_query("query3", "RDD", avg_time)
+    return build_query_result("query3", HEADER_Q3, SORT_LIST_Q3, result_rows, avg_time)

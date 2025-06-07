@@ -4,21 +4,9 @@ from pyspark.sql.functions import col, avg
 from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator
 from pyspark.ml.feature import VectorAssembler
-from model.model import QueryResult, Result, NUM_RUNS_PER_QUERY as runs
+from model.model import QueryResult, NUM_RUNS_PER_QUERY as runs
 from pyspark.sql import SparkSession
-from engineering.execution_logger import QueryExecutionLogger
-
-
-HEADER = ["Country", "Cluster"]
-SORT_LIST = ["Cluster", "Country"]
-
-# Lists of country selected
-COUNTRIES = [
-    "Austria", "Belgium", "France", "Finland", "Germany", "Great Britain", "Ireland", "Italy", "Norway",
-    "Poland", "Czechia", "Slovenia", "Spain", "Sweden", "Switzerland",
-    "USA", "United Arab Emirates", "China", "Mainland India", "Argentina", "Australia", "Brazil", "Algeria",
-    "Egypt", "Japan", "Kenya", "Kuwait", "Mexico", "Qatar", "Seychelles"
-]
+from engineering.query_utils import log_query, build_query_result, HEADER_Q4, SORT_LIST_Q4, COUNTRIES_Q4
 
 def _run_query4_clustering(df: DataFrame, spark: SparkSession, use_parallel: bool) -> QueryResult:
     execution_times = []
@@ -30,7 +18,7 @@ def _run_query4_clustering(df: DataFrame, spark: SparkSession, use_parallel: boo
         start_time = time.time()
 
         df_filtered = df.filter(
-            (col("Country").isin(COUNTRIES)) & ((col("Year")) == 2024)
+            (col("Country").isin(COUNTRIES_Q4)) & ((col("Year")) == 2024)
         )
 
         df_avg = df_filtered.groupBy("Country").agg(
@@ -75,23 +63,8 @@ def _run_query4_clustering(df: DataFrame, spark: SparkSession, use_parallel: boo
     ).collect()
 
     avg_time = sum(execution_times) / runs
-
-    QueryExecutionLogger().log(
-        query_name="query4",
-        query_type="Dataframe",
-        execution_time=avg_time,
-        spark_conf={"spark.executor.instances": QueryExecutionLogger().get_num_executor() or "unknown"}
-    )
-
-    return QueryResult(name="query4", results=[
-        Result(
-            name="query4",
-            header=HEADER,
-            sort_list=SORT_LIST,
-            result=result_rows,
-            execution_time=avg_time
-        )
-    ])
+    log_query("query4", "Dataframe", avg_time)
+    return build_query_result("query4", HEADER_Q4, SORT_LIST_Q4, result_rows, avg_time)
 
 def exec_query4(df: DataFrame, spark: SparkSession) -> QueryResult:
     print("Starting to evaluate query 4 (Standard Clustering)...")

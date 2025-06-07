@@ -1,9 +1,9 @@
 import time
 from pyspark.sql import DataFrame, SparkSession
 from api.spark_api import SparkAPI
-from model.model import Result, QueryResult, NUM_RUNS_PER_QUERY as runs
-from query.dataframe.query1 import HEADER, SORT_LIST
-from engineering.execution_logger import QueryExecutionLogger
+from model.model import QueryResult, NUM_RUNS_PER_QUERY as runs
+from engineering.query_utils import log_query, build_query_result, HEADER_Q1, SORT_LIST_Q1
+
 
 def exec_query1_sql(df: DataFrame, spark: SparkSession) -> QueryResult:
     spark_api = SparkAPI.get()
@@ -36,32 +36,13 @@ def exec_query1_sql(df: DataFrame, spark: SparkSession) -> QueryResult:
 
         start_time = time.time()
         result = result_df.collect()
-        end_time = time.time()
+        execution_times.append(time.time() - start_time)
 
-        exec_time = end_time - start_time
-        execution_times.append(exec_time)
-        print(f"Execution time for run {i + 1}: {exec_time:.4f} seconds")
-
-        # Salvo l'ultimo risultato per includerlo nel QueryResult
         if i == runs - 1:
             last_result = result
 
     avg_time = sum(execution_times) / runs
     print(f"Average execution time over {runs} runs: {avg_time:.4f} seconds")
 
-    QueryExecutionLogger().log(
-        query_name="query1",
-        query_type="SQL",
-        execution_time=avg_time,
-        spark_conf={"spark.executor.instances": QueryExecutionLogger().get_num_executor() or "unknown"}
-    )
-
-    return QueryResult(name="sql-query1", results=[
-        Result(
-            name="sql-query1",
-            header=HEADER,
-            sort_list=SORT_LIST,
-            result=last_result,
-            execution_time=avg_time
-        )
-    ])
+    log_query("query1", "SQL", avg_time)
+    return build_query_result("sql-query1", HEADER_Q1, SORT_LIST_Q1, last_result, avg_time)

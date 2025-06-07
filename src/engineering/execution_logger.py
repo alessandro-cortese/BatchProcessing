@@ -2,7 +2,6 @@ import csv
 import time
 import os
 from threading import Lock
-from typing import Optional
 
 output_dir = "/performance"
 

@@ -61,7 +61,10 @@ class QueryResult(list[Result]):
     def total_exec_time(self) -> float:
         return sum([res.exec_time for res in self])
 
-
 class SparkError(Exception):
     """Custom exception for Spark errors"""
     pass
+
+
+
+

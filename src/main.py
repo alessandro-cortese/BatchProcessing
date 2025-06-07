@@ -8,8 +8,8 @@ def run_query_for_format(file_format, workers):
     """
     Run queries for a given file format (Parquet, CSV, Avro) for all data types.
     """
-    #data_types = ["dataframe", "rdd", "sql"]
-    data_types = ["rdd"]
+    data_types = ["dataframe", "rdd", "sparkSQL"]
+    #data_types = ["rdd"]
     
     for data_type in data_types:
         

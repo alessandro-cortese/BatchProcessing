@@ -1,21 +1,11 @@
 import time
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, year, min, max, avg
-from model.model import QueryResult, Result
+from pyspark.sql.functions import col, min, max, avg
+from model.model import QueryResult
 from pyspark.rdd import RDD  
 from pyspark.sql import SparkSession
-from datetime import datetime
 from model.model import NUM_RUNS_PER_QUERY as runs
-from engineering.execution_logger import QueryExecutionLogger
-
-HEADER = [
-    "Country", "Year",
-    "Avg_Carbon_Intensity", "Min_Carbon_Intensity", "Max_Carbon_Intensity",
-    "Avg_CFE", "Min_CFE", "Max_CFE"
-]
-
-
-SORT_LIST = ["Country", "Year"]
+from engineering.query_utils import log_query, build_query_result, HEADER_Q1, SORT_LIST_Q1
 
 def exec_query1_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
     """
@@ -57,22 +47,5 @@ def exec_query1_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
     avg_time = sum(execution_times) / runs
     print(f"\nAverage execution time over {runs} runs: {avg_time:.2f} seconds")
 
-    QueryExecutionLogger().log(
-        query_name="query1",
-        query_type="Dataframe",
-        execution_time=avg_time,
-        spark_conf={"spark.executor.instances": QueryExecutionLogger().get_num_executor() or "unknown"}
-    )
-
-    # Wrap result in QueryResult from the last run 
-    res = QueryResult(name="query1", results=[
-        Result(
-            name="query1",
-            header=HEADER,
-            sort_list=SORT_LIST,
-            result=out_res,
-            execution_time=avg_time
-        )
-    ])
-
-    return res
+    log_query("query1", "DataFrame", avg_time)
+    return build_query_result("query1", HEADER_Q1, SORT_LIST_Q1, out_res, avg_time)

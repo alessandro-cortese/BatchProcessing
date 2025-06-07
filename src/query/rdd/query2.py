@@ -1,12 +1,11 @@
 from pyspark.rdd import RDD
 from pyspark.sql import Row
 from pyspark.sql import SparkSession
-from model.model import QueryResult, Result, NUM_RUNS_PER_QUERY as runs
+from model.model import QueryResult, NUM_RUNS_PER_QUERY as runs
 import time
-from engineering.execution_logger import QueryExecutionLogger
+from engineering.query_utils import log_query, build_query_result, HEADER_Q2
 
-HEADER = ["Year", "Month", "Carbon_Intensity", "CFE"]
-SORT_LIST = []
+
 
 def exec_query2_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
     print("Starting to evaluate query 2 with RDD...")
@@ -59,20 +58,5 @@ def exec_query2_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
 
     print("Query execution finished.")
     print(f"Query 2 average execution time over {runs} runs: {avg_time:.2f} seconds")
-
-    QueryExecutionLogger().log(
-        query_name="query2",
-        query_type="RDD",
-        execution_time=avg_time,
-        spark_conf={"spark.executor.instances": QueryExecutionLogger().get_num_executor() or "unknown"}
-    )
-
-    return QueryResult(name="query2", results=[
-        Result(
-            name="query2",
-            header=HEADER,
-            sort_list=SORT_LIST,
-            result=[tuple(r) for r in result_df.collect()],
-            execution_time=avg_time
-        )
-    ])
+    log_query("query2", "RDD", avg_time)
+    return build_query_result("query2", HEADER_Q2, [], [tuple(r) for r in result_df.collect()], avg_time)

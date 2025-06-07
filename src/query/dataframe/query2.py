@@ -1,17 +1,12 @@
 import time
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, year, avg
-from model.model import QueryResult, Result
+from pyspark.sql.functions import col, avg
+from model.model import QueryResult
 from pyspark.sql import SparkSession
 from pyspark.rdd import RDD  
 from model.model import NUM_RUNS_PER_QUERY as runs
-from engineering.execution_logger import QueryExecutionLogger
+from engineering.query_utils import log_query, build_query_result, HEADER_Q2
 
-HEADER = [
-    "Year", "Month", "Carbon_Intensity", "CFE"
-]
-
-# check if when we compute csv the columns are added
 def exec_query2_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
     """
     Executes Query 1 using only the DataFrame API.
@@ -56,23 +51,6 @@ def exec_query2_dataframe(df: DataFrame, spark: SparkSession) -> QueryResult:
 
     print("Query execution finished.")
     print(f"Query 2 average time over {runs} runs: {avg_time:.2f} seconds")
-
-    QueryExecutionLogger().log(
-        query_name="query2",
-        query_type="DataFrame",
-        execution_time=avg_time,
-        spark_conf={"spark.executor.instances": QueryExecutionLogger().get_num_executor() or "unknown"}
-    )
-
-
-    result_df.show()
-
-    return QueryResult(name="query2", results=[
-        Result(
-            name="query2",
-            header=HEADER,
-            sort_list=[],
-            result=out_res,
-            execution_time=avg_time
-        )
-    ])
+    log_query("query2", "DataFrame", avg_time)
+    
+    return build_query_result("query2", HEADER_Q2, [], out_res, avg_time)

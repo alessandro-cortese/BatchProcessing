@@ -67,18 +67,6 @@ class SparkAPI:
         df.coalesce(1).write.csv(path, mode="overwrite", header=True)
 
 
-    # def write_to_hdfs(self, df: DataFrame, filename: str, format: DataFormat) -> None:
-    #     """Write DataFrame to HDFS in the specified format."""
-    #     df = df.coalesce(1)
-    #     config = Config()
-    #     filename = filename + "." + format.name.lower()
-    #     if format == DataFormat.PARQUET:
-    #         path = config.hdfs_dataset_preprocessed_dir_url + "/"+ filename
-    #         print(f"path: {path}")
-    #         df.write.parquet(config.hdfs_dataset_preprocessed_dir_url + "/"+ filename, mode="overwrite")
-    #     else:
-    #         raise ValueError("Invalid data format")
-
     def write_to_hdfs(self, df: DataFrame, filename: str, format: DataFormat) -> None:
         """Write DataFrame to HDFS in the specified format (PARQUET, CSV, AVRO)."""
         df = df.coalesce(1)
