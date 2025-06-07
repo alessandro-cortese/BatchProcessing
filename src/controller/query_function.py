@@ -10,7 +10,7 @@ from query.dataframe.query3 import exec_query3_dataframe
 from query.dataframe.query4 import exec_query4_parallel
 
 from query.rdd.query1 import exec_query1_rdd
-from query.rdd.query2 import exec_query2_rdd
+from query.rdd.query2 import exec_query2_rdd, exec_query2_rdd_refactored
 from query.rdd.query3 import exec_query3_rdd
 
 from query.sparkSQL.query1 import exec_query1_sql
@@ -31,7 +31,7 @@ QUERY_FUNCTIONS = {
     },
     "rdd": {
         1: exec_query1_rdd,
-        2: exec_query2_rdd,
+        2: exec_query2_rdd_refactored,
         3: exec_query3_rdd,
     },
     "sparkSQL": {

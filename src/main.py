@@ -8,8 +8,8 @@ def run_query_for_format(file_format, workers):
     """
     Run queries for a given file format (Parquet, CSV, Avro) for all data types.
     """
-    data_types = ["dataframe", "rdd", "sql"]
-    
+    #data_types = ["rdd", "dataframe", "sparkSQL"]
+    data_types = ["rdd"]
     for data_type in data_types:
         
         print(f"Start Query with {data_type} with {file_format.name} file format")
@@ -19,7 +19,7 @@ def run_query_for_format(file_format, workers):
         else:
             query_run = 4
         
-        for i in range(1, query_run):
+        for i in range(2, query_run - 1):
             sc = SparkController(i, write_evaluation=False, local_write=True)
             sc.set_data_format(file_format)  
             sc.prepare_for_processing()
