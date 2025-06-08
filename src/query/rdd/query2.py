@@ -26,10 +26,10 @@ def exec_query2_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
                 a[2] + b[2]
             ))
             .map(lambda kv: (
-                kv[0][0],  # Year
-                kv[0][1],  # Month
-                kv[1][0] / kv[1][2],  # Avg CI
-                kv[1][1] / kv[1][2]   # Avg CFE
+                kv[0][0],               # Year
+                kv[0][1],               # Month
+                kv[1][0] / kv[1][2],    # Avg CI
+                kv[1][1] / kv[1][2]     # Avg CFE
             ))
         )
 

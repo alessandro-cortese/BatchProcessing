@@ -17,7 +17,6 @@ for file_path in csv_files:
     try:
         df = pd.read_csv(file_path)
 
-        # Estrai il formato (es: CSV, AVRO, PARQUET) dal nome file
         filename = os.path.basename(file_path)
         file_format = filename.split("_")[-1].split(".")[0].strip().lower()
 
@@ -30,14 +29,11 @@ for file_path in csv_files:
 if not df_list:
     raise ValueError("Nessun CSV valido trovato nella cartella specificata.")
 
-# Unisci tutti i dati
 df_all = pd.concat(df_list, ignore_index=True)
 
-# Normalizza nomi
 df_all["query_type"] = df_all["query_type"].str.strip().str.lower()
 df_all["query_name"] = df_all["query_name"].str.strip().str.lower()
 
-# Crea grafici per ogni combinazione query_type + formato file
 grouped = df_all.groupby(["query_type", "file_format"])
 
 for (qtype, fmt), subset in grouped:
@@ -65,12 +61,10 @@ for (qtype, fmt), subset in grouped:
     plt.legend(title="Query Name")
     plt.tight_layout()
 
-    # Salva grafico
     chart_filename = f"execution_time_{qtype}_{fmt}.png"
     plt.savefig(os.path.join(chart_folder, chart_filename))
     plt.close()
 
-# Grafici EXTRA per dataframe, senza query4
 df_filtered = df_all[(df_all["query_type"] == "dataframe") & (df_all["query_name"] != "query4")]
 
 for fmt in df_filtered["file_format"].unique():
@@ -99,7 +93,6 @@ for fmt in df_filtered["file_format"].unique():
     plt.legend(title="Query Name")
     plt.tight_layout()
 
-    # Salva grafico
     chart_filename = f"execution_time_dataframe_{fmt}_noquery4.png"
     plt.savefig(os.path.join(chart_folder, chart_filename))
     plt.close()

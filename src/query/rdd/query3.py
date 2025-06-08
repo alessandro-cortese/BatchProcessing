@@ -33,10 +33,10 @@ def exec_query3_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
 
         # Compute hourly average CI and CFE
         hourly_avg = reduced.map(lambda kv: (
-            kv[0][0],  # Country
-            kv[0][1],  # Hour
-            kv[1][0] / kv[1][2],  # avg CI
-            kv[1][1] / kv[1][2]   # avg CFE
+            kv[0][0],               # Country
+            kv[0][1],               # Hour
+            kv[1][0] / kv[1][2],    # avg CI
+            kv[1][1] / kv[1][2]     # avg CFE
         ))
 
         # Group by Country

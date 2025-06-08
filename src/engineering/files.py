@@ -53,8 +53,8 @@ def write_result_as_csv(res_df: DataFrame, out_path: str) -> None:
 
 def write_evaluation(query_name: str, format: str, exec_time: float) -> None:
 
-    worker_nodes = SparkAPI.get().context._jsc.sc(  # type: ignore
-    ).getExecutorMemoryStatus().size() - 1  # type: ignore
+    worker_nodes = SparkAPI.get().context._jsc.sc(  
+    ).getExecutorMemoryStatus().size() - 1  
     eval_path = results_path_from_filename("evaluation.csv")
 
     if (not os.path.exists(eval_path)):

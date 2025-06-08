@@ -81,5 +81,4 @@ def exec_query1_rdd(rdd: RDD, spark: SparkSession) -> QueryResult:
     print("Query execution finished.")
     print(f"Query 1 average time over {runs} runs: {avg_time:.2f} seconds")
     log_query("query1", "RDD", avg_time)
-    ## FARE MOLTA ATTENZIONE QUI
     return build_query_result("query1", HEADER_Q1, SORT_LIST_Q1, [tuple(r) for r in df.collect()], avg_time)
